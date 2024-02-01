@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rayfarandi/fwg17-go-backend/src/models"
 )
 
 type pageInfo struct {
@@ -27,28 +28,31 @@ type User struct {
 	Id       int    `json:"id" form:"id"`
 	Email    string `json:"email" form:"email"`
 	Password string `json:"password" form:"password"`
+	Name     string `json:"name" form:"name"`
+}
+type responseOnly struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
 }
 
 func ListAllUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
+	users, err := models.FindAllUsers()
+	if err != nil {
+		// log.Fatalln(err)
+		c.JSON(http.StatusInternalServerError, &responseOnly{
+			Success: false,
+			Message: "Internal Server Error",
+		})
+		return
+	}
 	c.JSON(http.StatusOK, &responseList{
 		Success: true,
 		Message: "List All Users",
 		PageInfo: pageInfo{
 			Page: page,
 		},
-		Results: []User{
-			{
-				Id:       1,
-				Email:    "admin@mail.com",
-				Password: "1234",
-			},
-			{
-				Id:       2,
-				Email:    "fazztrack@mail.com",
-				Password: "1234",
-			},
-		},
+		Results: users,
 	})
 }
 
