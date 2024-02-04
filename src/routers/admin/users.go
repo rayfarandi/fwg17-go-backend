@@ -1,8 +1,8 @@
-package routers
+package admin
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rayfarandi/fwg17-go-backend/src/controllers"
+	controllers "github.com/rayfarandi/fwg17-go-backend/src/controllers/admin"
 )
 
 func UserRouter(r *gin.RouterGroup) {
