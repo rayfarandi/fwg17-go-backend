@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/KEINOS/go-argonize"
 	"github.com/gin-gonic/gin"
 	"github.com/rayfarandi/fwg17-go-backend/src/models"
 )
@@ -63,7 +64,9 @@ func ListAllUsers(c *gin.Context) {
 		return
 	}
 	offset := (page - 1) * limit
-	result, err := models.FindAllUsers(limit, offset)
+	// result, err := models.FindAllUsers(limit, offset)
+	searchKey := c.DefaultQuery("searchKey", "")
+	result, err := models.FindAllUsers(limit, offset, searchKey)
 	pageInfo := pageInfo{
 		Page:      page,
 		Limit:     limit,
@@ -109,15 +112,37 @@ func DetailUser(c *gin.Context) {
 
 func CreateUser(c *gin.Context) {
 	data := models.User{}
-	err := c.Bind(&data)
-	if err != nil {
-		// log.Println(err)
+
+	emailInput := c.PostForm("email")
+	passwordInput := c.PostForm("password")
+
+	if emailInput == "" || passwordInput == "" {
 		c.JSON(http.StatusBadRequest, &responseOnly{
 			Success: false,
-			Message: "Invalid input",
+			Message: "Email or Password not be empty",
 		})
 		return
 	}
+	exitingEmail, _ := models.FindOneUserEmail(emailInput)
+	if exitingEmail.Email == emailInput {
+		c.JSON(http.StatusBadRequest, &responseOnly{
+			Success: false,
+			Message: "Email already use from data",
+		})
+		return
+	}
+	c.Bind(&data)
+	plain := []byte(data.Password)
+	hash, err := argonize.Hash(plain)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &responseOnly{
+			Success: false,
+			Message: "Generate password error",
+		})
+		return
+	}
+	data.Password = hash.String()
+
 	user, err := models.CreateUser(data)
 	if err != nil {
 		log.Println(err)
@@ -141,6 +166,17 @@ func UpdateUser(c *gin.Context) {
 
 	c.Bind(&data)
 	data.Id = id
+	plain := []byte(data.Password)
+	hash, err := argonize.Hash(plain)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &responseOnly{
+			Success: false,
+			Message: "Failid generate hash",
+		})
+		return
+	}
+	data.Password = hash.String()
+
 	user, err := models.UpdateUser(data)
 	if err != nil {
 		log.Println(err)
