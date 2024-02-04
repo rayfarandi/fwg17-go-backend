@@ -29,11 +29,17 @@ type InfoUser struct {
 	Count int
 }
 
-func FindAllUsers() ([]User, error) {
-	sql := `SELECT * FROM "users"`
-	data := []User{}
-	err := db.Select(&data, sql)
-	return data, err
+func FindAllUsers(limit int, offset int) (InfoUser, error) {
+
+	sql := `SELECT * FROM "users" Limit $1 OFFSET $2`
+	sqlCount := `SELECT COUNT(*) FROM "users"`
+	result := InfoUser{}
+	dataUser := []User{}
+	err := db.Select(&dataUser, sql, limit, offset)
+	result.Data = dataUser
+	row := db.QueryRow(sqlCount)
+	err = row.Scan(&result.Count)
+	return result, err
 }
 
 func FindOneUser(id int) (User, error) {

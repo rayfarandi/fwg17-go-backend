@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,7 +12,10 @@ import (
 )
 
 type pageInfo struct {
-	Page int `json:"page"`
+	Page      int `json:"page"`
+	Limit     int `json:"limit"`
+	LastPage  int `json:"lastPage"`
+	TotalData int `json:"totalData"`
 }
 
 type responseList struct {
@@ -42,8 +46,30 @@ type responseOnly struct {
 }
 
 func ListAllUsers(c *gin.Context) {
-	page, _ := strconv.Atoi(c.Query("page"))
-	users, err := models.FindAllUsers()
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if page < 1 {
+		c.JSON(http.StatusBadRequest, &responseOnly{
+			Success: false,
+			Message: "No such page",
+		})
+		return
+	}
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	if limit < 1 {
+		c.JSON(http.StatusBadRequest, &responseOnly{
+			Success: false,
+			Message: "Limit must be at least 1",
+		})
+		return
+	}
+	offset := (page - 1) * limit
+	result, err := models.FindAllUsers(limit, offset)
+	pageInfo := pageInfo{
+		Page:      page,
+		Limit:     limit,
+		LastPage:  int(math.Ceil(float64(result.Count) / float64(limit))),
+		TotalData: result.Count,
+	}
 	if err != nil {
 		log.Fatalln(err)
 		c.JSON(http.StatusInternalServerError, &responseOnly{
@@ -53,12 +79,10 @@ func ListAllUsers(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, &responseList{
-		Success: true,
-		Message: "List All Users",
-		PageInfo: pageInfo{
-			Page: page,
-		},
-		Results: users,
+		Success:  true,
+		Message:  "List All Users",
+		PageInfo: pageInfo,
+		Results:  result.Data,
 	})
 }
 
