@@ -6,6 +6,7 @@ import (
 )
 
 func Combine(r *gin.Engine) {
+	AuthRouter((r.Group("/auth")))
 	admin.Combine(r.Group("/admin"))
 
 }
