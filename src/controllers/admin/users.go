@@ -1,4 +1,4 @@
-package controllers
+package controllers_admin
 
 import (
 	"log"
@@ -10,64 +10,17 @@ import (
 	"github.com/KEINOS/go-argonize"
 	"github.com/gin-gonic/gin"
 	"github.com/rayfarandi/fwg17-go-backend/src/models"
+	"github.com/rayfarandi/fwg17-go-backend/src/services"
 )
-
-type pageInfo struct {
-	Page      int `json:"page"`
-	Limit     int `json:"limit"`
-	LastPage  int `json:"lastPage"`
-	TotalData int `json:"totalData"`
-}
-
-type responseList struct {
-	Success  bool        `json:"success"`
-	Message  string      `json:"message"`
-	PageInfo pageInfo    `json:"pageInfo"`
-	Results  interface{} `json:"results"`
-}
-type response struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	Results interface{} `json:"results"`
-}
-
-type User struct {
-	Id          int    `json:"id" form:"id"`
-	FullName    string `json:"fullName" form:"fullName"`
-	Email       string `json:"email" form:"email" binding:"email"`
-	Password    string `json:"password" form:"password"`
-	Address     string `json:"address" form:"address"`
-	Picture     string `json:"picture" form:"picture"`
-	PhoneNumber string `json:"phoneNumber" form:"phoneNumber"`
-	Role        string `json:"role" form:"role"`
-}
-type responseOnly struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
 
 func ListAllUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	if page < 1 {
-		c.JSON(http.StatusBadRequest, &responseOnly{
-			Success: false,
-			Message: "No such page",
-		})
-		return
-	}
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
-	if limit < 1 {
-		c.JSON(http.StatusBadRequest, &responseOnly{
-			Success: false,
-			Message: "Limit must be at least 1",
-		})
-		return
-	}
 	offset := (page - 1) * limit
 	// result, err := models.FindAllUsers(limit, offset)
 	searchKey := c.DefaultQuery("searchKey", "")
-	result, err := models.FindAllUsers(limit, offset, searchKey)
-	pageInfo := pageInfo{
+	result, err := models.FindAllUsers(searchKey, limit, offset)
+	pageInfo := services.PageInfo{
 		Page:      page,
 		Limit:     limit,
 		LastPage:  int(math.Ceil(float64(result.Count) / float64(limit))),
@@ -75,13 +28,13 @@ func ListAllUsers(c *gin.Context) {
 	}
 	if err != nil {
 		log.Fatalln(err)
-		c.JSON(http.StatusInternalServerError, &responseOnly{
+		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
 			Success: false,
 			Message: "Internal Server Error",
 		})
 		return
 	}
-	c.JSON(http.StatusOK, &responseList{
+	c.JSON(http.StatusOK, &services.ResponseList{
 		Success:  true,
 		Message:  "List All Users",
 		PageInfo: pageInfo,
@@ -95,15 +48,19 @@ func DetailUser(c *gin.Context) {
 	if err != nil {
 		// log.Println(err)
 		if strings.HasPrefix(err.Error(), "sql: no rows") {
-			c.JSON(http.StatusNotFound, &responseOnly{
+			c.JSON(http.StatusNotFound, &services.ResponseOnly{
 				Success: false,
 				Message: "User not found",
 			})
 			return
 		}
+		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+			Success: false,
+			Message: "Internal Server Error",
+		})
 		return
 	}
-	c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
 		Message: "Detail User",
 		Results: user,
@@ -117,7 +74,7 @@ func CreateUser(c *gin.Context) {
 	passwordInput := c.PostForm("password")
 
 	if emailInput == "" || passwordInput == "" {
-		c.JSON(http.StatusBadRequest, &responseOnly{
+		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
 			Success: false,
 			Message: "Email or Password not be empty",
 		})
@@ -125,7 +82,7 @@ func CreateUser(c *gin.Context) {
 	}
 	exitingEmail, _ := models.FindOneUserEmail(emailInput)
 	if exitingEmail.Email == emailInput {
-		c.JSON(http.StatusBadRequest, &responseOnly{
+		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
 			Success: false,
 			Message: "Email already use from data",
 		})
@@ -135,7 +92,7 @@ func CreateUser(c *gin.Context) {
 	plain := []byte(data.Password)
 	hash, err := argonize.Hash(plain)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, &responseOnly{
+		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
 			Success: false,
 			Message: "Generate password error",
 		})
@@ -146,14 +103,14 @@ func CreateUser(c *gin.Context) {
 	user, err := models.CreateUser(data)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, &responseOnly{
+		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
 			Success: false,
 			Message: "Internal Server Error",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
 		Message: "User Created successfully",
 		Results: user,
@@ -169,7 +126,7 @@ func UpdateUser(c *gin.Context) {
 	plain := []byte(data.Password)
 	hash, err := argonize.Hash(plain)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, &responseOnly{
+		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
 			Success: false,
 			Message: "Failid generate hash",
 		})
@@ -180,13 +137,13 @@ func UpdateUser(c *gin.Context) {
 	user, err := models.UpdateUser(data)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, &responseOnly{
+		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
 			Success: false,
 			Message: "Internal server error",
 		})
 		return
 	}
-	c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
 		Message: "User update successfully",
 		Results: user,
@@ -199,19 +156,19 @@ func DeleteUser(c *gin.Context) {
 	if err != nil {
 		log.Fatalln(err)
 		if strings.HasPrefix(err.Error(), "sql:no rows") {
-			c.JSON(http.StatusNotFound, &responseOnly{
+			c.JSON(http.StatusNotFound, &services.ResponseOnly{
 				Success: false,
 				Message: "No data",
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, &responseOnly{
+		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
 			Success: false,
 			Message: "Internal Server Error",
 		})
 		return
 	}
-	c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
 		Message: "Delete User",
 		Results: user,
