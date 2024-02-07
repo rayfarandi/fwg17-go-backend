@@ -14,7 +14,7 @@ func main() {
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, &services.Response{
 			Success: false,
-			Message: "Resource not found",
+			Message: "Resource not found restart on change yaa",
 		})
 	})
 	r.Run("127.0.0.1:8888")

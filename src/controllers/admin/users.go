@@ -9,6 +9,7 @@ import (
 
 	"github.com/KEINOS/go-argonize"
 	"github.com/gin-gonic/gin"
+	"github.com/rayfarandi/fwg17-go-backend/src/lib"
 	"github.com/rayfarandi/fwg17-go-backend/src/models"
 	"github.com/rayfarandi/fwg17-go-backend/src/services"
 )
@@ -17,13 +18,13 @@ func ListAllUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
 	offset := (page - 1) * limit
-	// result, err := models.FindAllUsers(limit, offset)
+
 	searchKey := c.DefaultQuery("searchKey", "")
 	result, err := models.FindAllUsers(searchKey, limit, offset)
 	pageInfo := services.PageInfo{
 		Page:      page,
 		Limit:     limit,
-		LastPage:  int(math.Ceil(float64(result.Count) / float64(limit))),
+		TotalPage: int(math.Ceil(float64(result.Count) / float64(limit))),
 		TotalData: result.Count,
 	}
 	if err != nil {
@@ -88,7 +89,12 @@ func CreateUser(c *gin.Context) {
 		})
 		return
 	}
-	c.Bind(&data)
+	c.ShouldBind(&data)
+
+	//upload
+	data.Picture = lib.Upload(c, "picture", "users")
+	//upload
+
 	plain := []byte(data.Password)
 	hash, err := argonize.Hash(plain)
 	if err != nil {
