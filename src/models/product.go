@@ -52,8 +52,8 @@ func FindOneProductByName(name string) (Product, error) {
 
 func CreateProduct(data Product) (Product, error) {
 	sql := `
-	INSERT INTO "product" ("name", "basePrice", "description", "images", "discount", "isRecommended")
-	VALUES (:email, :basePrice, :description, :images, :discount,  :isRecommended)
+	INSERT INTO "products" ("name", "basePrice", "description", "image", "discount", "isRecommended")
+	VALUES (:name, :basePrice, :description, :image, :discount,  :isRecommended)
 	RETURNING *
 	`
 	result := Product{}

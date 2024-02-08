@@ -96,6 +96,7 @@ func CreateProduct(c *gin.Context) {
 		return
 	}
 
+	c.Bind(&data)
 	product, err := models.CreateProduct(data)
 	if err != nil {
 		log.Println(err)
@@ -146,7 +147,7 @@ func UpdateProduct(c *gin.Context) {
 	c.Bind(&data)
 	data.Id = id
 
-	user, err := models.UpdateProduct(data)
+	product, err := models.UpdateProduct(data)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
@@ -157,14 +158,14 @@ func UpdateProduct(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
-		Message: "User update successfully",
-		Results: user,
+		Message: "Product update successfully",
+		Results: product,
 	})
 }
 
 func DeleteProduct(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := models.DeleteProduct(id)
+	product, err := models.DeleteProduct(id)
 	if err != nil {
 		log.Fatalln(err)
 		if strings.HasPrefix(err.Error(), "sql:no rows") {
@@ -183,7 +184,7 @@ func DeleteProduct(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
-		Message: "Delete User",
-		Results: user,
+		Message: "Delete product",
+		Results: product,
 	})
 }
