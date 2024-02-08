@@ -174,6 +174,7 @@ func DeleteUser(c *gin.Context) {
 		})
 		return
 	}
+
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
 		Message: "Delete User",
