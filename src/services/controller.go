@@ -12,6 +12,11 @@ type InfoUser struct {
 	Count int
 }
 
+type InfoProduct struct {
+	Data  interface{}
+	Count int
+}
+
 type ResponseList struct {
 	Success  bool        `json:"success"`
 	Message  string      `json:"message"`

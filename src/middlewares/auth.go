@@ -26,7 +26,7 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &models.User{
-				Id: claims["id"].(int),
+				Id: int(claims["id"].(float64)),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -54,10 +54,12 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 					Id: found.Id,
 				}, nil
 			} else {
-
 				return nil, errors.New("invalid_password")
 			}
 		},
+		// Authorizator: func(data interface{}, c *gin.Context) bool {
+		// 	return true
+		// },
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(http.StatusUnauthorized, &services.ResponseOnly{
 				Success: false,
