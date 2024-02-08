@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rayfarandi/fwg17-go-backend/src/lib"
 	"github.com/rayfarandi/fwg17-go-backend/src/models"
 	"github.com/rayfarandi/fwg17-go-backend/src/services"
 )
@@ -70,10 +71,10 @@ func DetailProduct(c *gin.Context) {
 func CreateProduct(c *gin.Context) {
 	data := models.Product{}
 
-	// c.ShouldBind(&data)
+	c.ShouldBind(&data)
 
 	//upload
-	// data.Picture = lib.Upload(c, "picture", "product")
+	data.Image = lib.Upload(c, "image", "product")
 	//upload
 	nameInput := c.PostForm("name")
 
