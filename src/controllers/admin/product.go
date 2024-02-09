@@ -71,9 +71,9 @@ func DetailProduct(c *gin.Context) {
 func CreateProduct(c *gin.Context) {
 	data := models.Product{}
 
+	//upload
 	c.ShouldBind(&data)
 
-	//upload
 	data.Image = lib.Upload(c, "image", "product")
 	//upload
 	nameInput := c.PostForm("name")
@@ -97,7 +97,7 @@ func CreateProduct(c *gin.Context) {
 		return
 	}
 
-	c.Bind(&data)
+	// c.Bind(&data)
 	product, err := models.CreateProduct(data)
 	if err != nil {
 		log.Println(err)
@@ -146,6 +146,11 @@ func UpdateProduct(c *gin.Context) {
 	data := models.Product{}
 
 	c.Bind(&data)
+	//upload
+	// c.ShouldBind(&data)
+
+	data.Image = lib.Upload(c, "image", "product")
+	//upload
 	data.Id = id
 
 	product, err := models.UpdateProduct(data)
@@ -157,6 +162,7 @@ func UpdateProduct(c *gin.Context) {
 		})
 		return
 	}
+
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
 		Message: "Product update successfully",
