@@ -141,13 +141,14 @@ func UpdateProduct(c *gin.Context) {
 			return
 		}
 	}
+
 	//
 
 	data := models.Product{}
 
-	c.Bind(&data)
+	c.ShouldBind(&data)
+	// c.Bind(&data)
 	//upload
-	// c.ShouldBind(&data)
 
 	data.Image = lib.Upload(c, "image", "product")
 	//upload

@@ -7,20 +7,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/KEINOS/go-argonize"
 	"github.com/gin-gonic/gin"
-	"github.com/rayfarandi/fwg17-go-backend/src/lib"
 	"github.com/rayfarandi/fwg17-go-backend/src/models"
 	"github.com/rayfarandi/fwg17-go-backend/src/services"
 )
 
-func ListAllUsers(c *gin.Context) {
+func ListAllProductSize(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
 	offset := (page - 1) * limit
 
-	searchKey := c.DefaultQuery("searchKey", "")
-	result, err := models.FindAllUsers(searchKey, limit, offset)
+	result, err := models.FindAllProductSize(limit, offset)
 	pageInfo := services.PageInfo{
 		Page:      page,
 		Limit:     limit,
@@ -37,21 +34,21 @@ func ListAllUsers(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, &services.ResponseList{
 		Success:  true,
-		Message:  "List All Users",
+		Message:  "List All Products size",
 		PageInfo: pageInfo,
 		Results:  result.Data,
 	})
 }
 
-func DetailUser(c *gin.Context) {
+func DetailProductSize(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := models.FindOneUser(id)
+	productSize, err := models.FindOneProductSize(id)
 	if err != nil {
-		// log.Println(err)
+		log.Println(err)
 		if strings.HasPrefix(err.Error(), "sql: no rows") {
 			c.JSON(http.StatusNotFound, &services.ResponseOnly{
 				Success: false,
-				Message: "User not found",
+				Message: "Product size not found",
 			})
 			return
 		}
@@ -63,50 +60,16 @@ func DetailUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
-		Message: "Detail User",
-		Results: user,
+		Message: "Detail Product size",
+		Results: productSize,
 	})
 }
 
-func CreateUser(c *gin.Context) {
-	data := models.User{}
+func CreateProductSize(c *gin.Context) {
+	data := models.ProductSize{}
 
-	emailInput := c.PostForm("email")
-	passwordInput := c.PostForm("password")
-
-	if emailInput == "" || passwordInput == "" {
-		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
-			Success: false,
-			Message: "Email or Password not be empty",
-		})
-		return
-	}
-	exitingEmail, _ := models.FindOneUserEmail(emailInput)
-	if exitingEmail.Email == emailInput {
-		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
-			Success: false,
-			Message: "Email already use from data",
-		})
-		return
-	}
-	c.ShouldBind(&data)
-
-	//upload
-	data.Picture = lib.Upload(c, "picture", "users")
-	//upload
-
-	plain := []byte(data.Password)
-	hash, err := argonize.Hash(plain)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
-			Success: false,
-			Message: "Generate password error",
-		})
-		return
-	}
-	data.Password = hash.String()
-
-	user, err := models.CreateUser(data)
+	c.Bind(&data)
+	productSize, err := models.CreateProductSize(data)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
@@ -118,35 +81,25 @@ func CreateUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
-		Message: "User Created successfully",
-		Results: user,
+		Message: "product Created successfully",
+		Results: productSize,
 	})
 }
 
-func UpdateUser(c *gin.Context) {
+func UpdateProductSize(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := models.User{}
 
-	c.Bind(&data)
+	data := models.ProductSize{}
+
+	c.ShouldBind(&data)
+	// c.Bind(&data)
+	// upload
+
+	// data.Image = lib.Upload(c, "image", "product")
+	// upload
 	data.Id = id
 
-	//upload
-	c.ShouldBind(&data)
-
-	data.Picture = lib.Upload(c, "picture", "users")
-	//upload
-	plain := []byte(data.Password)
-	hash, err := argonize.Hash(plain)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
-			Success: false,
-			Message: "Failid generate hash",
-		})
-		return
-	}
-	data.Password = hash.String()
-
-	user, err := models.UpdateUser(data)
+	product, err := models.UpdateProductSize(data)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
@@ -155,16 +108,17 @@ func UpdateUser(c *gin.Context) {
 		})
 		return
 	}
+
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
-		Message: "User update successfully",
-		Results: user,
+		Message: "Product update successfully",
+		Results: product,
 	})
 }
 
-func DeleteUser(c *gin.Context) {
+func DeleteProductSize(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := models.DeleteUser(id)
+	product, err := models.DeleteProductSize(id)
 	if err != nil {
 		log.Fatalln(err)
 		if strings.HasPrefix(err.Error(), "sql:no rows") {
@@ -183,7 +137,7 @@ func DeleteUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
-		Message: "Delete User",
-		Results: user,
+		Message: "Delete product",
+		Results: product,
 	})
 }

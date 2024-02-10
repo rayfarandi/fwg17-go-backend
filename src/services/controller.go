@@ -1,11 +1,5 @@
 package services
 
-type PageInfo struct {
-	Page      int `json:"page"`
-	Limit     int `json:"limit"`
-	TotalPage int `json:"totalPage"`
-	TotalData int `json:"totalData"`
-}
 type InfoUser struct {
 	// Data []User
 	Data  interface{}
@@ -17,6 +11,18 @@ type InfoProduct struct {
 	Count int
 }
 
+type InfoProductSize struct {
+	Data  interface{}
+	Count int
+}
+
+// General response //
+type PageInfo struct {
+	Page      int `json:"page"`
+	Limit     int `json:"limit"`
+	TotalPage int `json:"totalPage"`
+	TotalData int `json:"totalData"`
+}
 type ResponseList struct {
 	Success  bool        `json:"success"`
 	Message  string      `json:"message"`

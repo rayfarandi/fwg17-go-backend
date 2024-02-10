@@ -10,4 +10,5 @@ func Combine(r *gin.RouterGroup) {
 	r.Use(authMiddleware.MiddlewareFunc())
 	UserRouter(r.Group("/users"))
 	ProductRouter(r.Group("/products"))
+	ProductSizeRouter(r.Group("/productSize"))
 }
