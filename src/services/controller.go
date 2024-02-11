@@ -15,6 +15,10 @@ type InfoProductSize struct {
 	Data  interface{}
 	Count int
 }
+type InfoProductSizeVariant struct {
+	Data  interface{}
+	Count int
+}
 
 // General response //
 type PageInfo struct {

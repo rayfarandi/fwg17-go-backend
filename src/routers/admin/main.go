@@ -11,4 +11,5 @@ func Combine(r *gin.RouterGroup) {
 	UserRouter(r.Group("/users"))
 	ProductRouter(r.Group("/products"))
 	ProductSizeRouter(r.Group("/productSize"))
+	ProductVariantRouter(r.Group("/productVariant"))
 }
