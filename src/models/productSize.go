@@ -9,7 +9,7 @@ import (
 
 type ProductSize struct {
 	Id              int        `db:"id" json:"id"`
-	Size            string     `db:"size" json:"size" form:"size"`
+	Size            *string    `db:"size" json:"size" form:"size"`
 	ProductId       *int       `db:"productId" json:"peroductId" form:"productId"`
 	AdditionalPrice *int       `db:"additionalPrice" json:"additionalPrice" form:"additionalPrice"`
 	CreatedAt       *time.Time `db:"createdAt" json:"createdAt"`

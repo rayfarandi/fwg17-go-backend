@@ -153,10 +153,10 @@ func UpdateProductSize(c *gin.Context) {
 
 func DeleteProductSize(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	product, err := models.DeleteProductSize(id)
+	productSize, err := models.DeleteProductSize(id)
 	if err != nil {
-		log.Fatalln(err)
-		if strings.HasPrefix(err.Error(), "sql:no rows") {
+		// log.Fatalln(err)
+		if strings.HasPrefix(err.Error(), "sql: no rows in result set") {
 			c.JSON(http.StatusNotFound, &services.ResponseOnly{
 				Success: false,
 				Message: "No data",
@@ -173,6 +173,6 @@ func DeleteProductSize(c *gin.Context) {
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
 		Message: "Delete product",
-		Results: product,
+		Results: productSize,
 	})
 }
