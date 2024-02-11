@@ -1,6 +1,7 @@
 package controllers_admin
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -98,10 +99,27 @@ func UpdateProductSize(c *gin.Context) {
 	// data.Image = lib.Upload(c, "image", "product")
 	// upload
 	data.Id = id
-
-	product, err := models.UpdateProductSize(data)
+	isExist, err := models.FindOneProductSize(id)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(isExist, err)
+		c.JSON(http.StatusNotFound, &services.ResponseOnly{
+			Success: false,
+			Message: "Size not found",
+		})
+		return
+	}
+
+	productSize, err := models.UpdateProductSize(data)
+	if err != nil {
+		fmt.Println(err)
+		if strings.HasPrefix(err.Error(), "sql: no rows") {
+			c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+				Success: false,
+				Message: "Sizes not found",
+			})
+			return
+		}
+
 		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
 			Success: false,
 			Message: "Internal server error",
@@ -111,9 +129,26 @@ func UpdateProductSize(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
-		Message: "Product update successfully",
-		Results: product,
+		Message: "Sizes updated successfully",
+		Results: productSize,
 	})
+
+	// productSize, err := models.UpdateProductSize(data)
+	// log.Println(data)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+	// 		Success: false,
+	// 		Message: "Internal server error",
+	// 	})
+	// 	return
+	// }
+
+	// c.JSON(http.StatusOK, &services.Response{
+	// 	Success: true,
+	// 	Message: "Product update successfully",
+	// 	Results: productSize,
+	// })
 }
 
 func DeleteProductSize(c *gin.Context) {

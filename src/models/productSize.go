@@ -9,7 +9,7 @@ import (
 
 type ProductSize struct {
 	Id              int        `db:"id" json:"id"`
-	Size            *string    `db:"size" json:"size" form:"size"`
+	Size            string     `db:"size" json:"size" form:"size"`
 	ProductId       *int       `db:"productId" json:"peroductId" form:"productId"`
 	AdditionalPrice *int       `db:"additionalPrice" json:"additionalPrice" form:"additionalPrice"`
 	CreatedAt       *time.Time `db:"createdAt" json:"createdAt"`
@@ -64,24 +64,29 @@ func CreateProductSize(data ProductSize) (ProductSize, error) {
 
 func UpdateProductSize(data ProductSize) (ProductSize, error) {
 	sql := `UPDATE "productSize" SET 
-	"size"=COALESCE(NULLIF(:size,''),"size"),
-	"productId"=COALESCE(NULLIF(:productId,''),"productId"),
+	"size" = :size,
+	"productId"=COALESCE(NULLIF(:productId,0),"productId"),
 	"additionalPrice"=COALESCE(NULLIF(:additionalPrice,0),"additionalPrice"),
 	"updatedAt"=NOW()
-	WHERE id = :id
-	WHERE "id"=:id
+	WHERE id =:id
 	RETURNING *
 	`
 	result := ProductSize{}
+
 	rows, err := db.NamedQuery(sql, data)
+	if err != nil {
+		return result, err
+	}
+
 	for rows.Next() {
 		rows.StructScan(&result)
 	}
+
 	return result, err
 }
 
 func DeleteProductSize(id int) (ProductSize, error) {
-	sql := `DELETE FROM "products" WHERE "id" = $1 RETURNING *`
+	sql := `DELETE FROM "productSize" WHERE "id" = $1 RETURNING *`
 	data := ProductSize{}
 	err := db.Get(&data, sql, id)
 	return data, err
