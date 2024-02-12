@@ -19,7 +19,25 @@ type InfoProductSizeVariant struct {
 	Data  interface{}
 	Count int
 }
+
 type InfoTags struct {
+	Data  interface{}
+	Count int
+}
+type InfoProductTags struct {
+	Data  interface{}
+	Count int
+}
+
+type InfoProductRatings struct {
+	Data  interface{}
+	Count int
+}
+type InfoCategories struct {
+	Data  interface{}
+	Count int
+}
+type InfoProductCategories struct {
 	Data  interface{}
 	Count int
 }
