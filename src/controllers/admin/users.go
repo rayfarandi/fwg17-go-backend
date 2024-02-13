@@ -1,9 +1,11 @@
 package controllers_admin
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -165,6 +167,7 @@ func UpdateUser(c *gin.Context) {
 func DeleteUser(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := models.DeleteUser(id)
+
 	if err != nil {
 		log.Fatalln(err)
 		if strings.HasPrefix(err.Error(), "sql:no rows") {
@@ -180,6 +183,14 @@ func DeleteUser(c *gin.Context) {
 		})
 		return
 	}
+	//hapus file picture
+	if user.Picture != nil {
+		fileName := *user.Picture
+		fileDes := fmt.Sprintf("uploads/users/%v", fileName)
+		os.Remove(fileDes)
+		fmt.Println(fileDes)
+	}
+	//
 
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
