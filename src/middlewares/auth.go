@@ -3,34 +3,37 @@ package middlewares
 import (
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/KEINOS/go-argonize"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/rayfarandi/fwg17-go-backend/src/models"
 	"github.com/rayfarandi/fwg17-go-backend/src/services"
 )
 
 func Auth() (*jwt.GinJWTMiddleware, error) {
+	godotenv.Load()
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "go-backend",
-		Key:         []byte("secret"),
+		Key:         []byte(os.Getenv("APP_SECRET")),
 		IdentityKey: "id",
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			user := data.(*models.User)
+			user := data.(*services.User)
 			return jwt.MapClaims{
 				"id": user.Id,
 			}
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			return &models.User{
+			return &services.User{
 				Id: int(claims["id"].(float64)),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			form := models.User{}
+			form := services.User{}
 			err := c.ShouldBind(&form)
 
 			if err != nil {
@@ -50,7 +53,7 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 			plain := []byte(form.Password)
 			if decoded.IsValidPassword(plain) {
 
-				return &models.User{
+				return &services.User{
 					Id: found.Id,
 				}, nil
 			} else {

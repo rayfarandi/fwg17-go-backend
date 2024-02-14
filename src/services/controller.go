@@ -1,14 +1,59 @@
 package services
 
+import (
+	"database/sql"
+	"time"
+)
+
 type InfoUser struct {
-	// Data []User
-	Data  interface{}
+	Data  []User
 	Count int
+}
+
+// User Models
+type User struct {
+	Id          int            `db:"id" json:"id"`
+	FullName    string         `db:"fullName" json:"fullName" form:"fullName"`
+	Email       string         `db:"email" json:"email" form:"email" form:"email"`
+	Password    string         `db:"password" json:"-" form:"password" form:"password"`
+	Address     sql.NullString `db:"address" json:"address" form:"address"`
+	Picture     string         `db:"picture" json:"picture" form:"picture"`
+	PhoneNumber sql.NullString `db:"phoneNumber" json:"phoneNumber" form:"phoneNumber"`
+	Role        string         `db:"role" json:"role" form:"role"`
+	CreatedAt   time.Time      `db:"createdAt" json:"createdAt"`
+	UpdatedAt   sql.NullTime   `db:"updatedAt" json:"updatedAt"`
+}
+
+// User Form
+type UserForm struct {
+	Id          int          `db:"id" json:"id"`
+	FullName    *string      `db:"fullName" json:"fullName" form:"fullName"`
+	Email       *string      `db:"email" json:"email" form:"email"`
+	Password    string       `db:"password" json:"-" form:"password"`
+	Address     *string      `db:"address" json:"address" form:"address"`
+	Picture     string       `db:"picture" json:"picture"`
+	PhoneNumber *string      `db:"phoneNumber" json:"phoneNumber" form:"phoneNumber"`
+	Role        *string      `db:"role" json:"role" form:"role"`
+	CreatedAt   time.Time    `db:"createdAt" json:"createdAt"`
+	UpdatedAt   sql.NullTime `db:"updatedAt" json:"updatedAt"`
 }
 
 type InfoProduct struct {
 	Data  interface{}
 	Count int
+}
+
+// Product Form
+type Product struct {
+	Id            int          `db:"id" json:"id"`
+	Name          *string      `db:"name" json:"name" form:"name"`
+	Description   *string      `db:"description" json:"description"`
+	BasePrice     *int         `db:"basePrice" json:"basePrice" form:"basePrice"`
+	Image         string       `db:"image" json:"image"`
+	Discount      *int         `db:"discount" json:"discount" form:"discount"`
+	IsRecommended *bool        `db:"isRecommended" json:"isRecommended" form:"isRecommended"`
+	CreatedAt     time.Time    `db:"createdAt" json:"createdAt"`
+	UpdatedAt     sql.NullTime `db:"updatedAt" json:"updatedAt"`
 }
 
 type InfoProductSize struct {
@@ -41,11 +86,17 @@ type InfoProductCategories struct {
 	Data  interface{}
 	Count int
 }
+type InfoPromo struct {
+	Data  interface{}
+	Count int
+}
 
 // General response //
 type PageInfo struct {
 	Page      int `json:"page"`
 	Limit     int `json:"limit"`
+	NextPage  int `json:"nextPage"`
+	PrevPage  int `json:"prevPage"`
 	TotalPage int `json:"totalPage"`
 	TotalData int `json:"totalData"`
 }

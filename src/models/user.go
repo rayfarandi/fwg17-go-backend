@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/rayfarandi/fwg17-go-backend/src/lib"
 	"github.com/rayfarandi/fwg17-go-backend/src/services"
@@ -10,63 +8,48 @@ import (
 
 var db *sqlx.DB = lib.DB
 
-type User struct {
-	Id          int        `db:"id" json:"id"`
-	Fullname    *string    `db:"fullName" json:"fullName" form:"fullName"`
-	Email       string     `db:"email" json:"email" form:"email"`
-	Password    string     `db:"password" json:"password" form:"password"`
-	Address     *string    `db:"address" json:"address" form:"address"`
-	Picture     *string    `db:"picture" json:"picture"`
-	PhoneNumber *string    `db:"phoneNumber" json:"phoneNumber" form:"phoneNumber"`
-	Role        *string    `db:"role" json:"role" form:"role"`
-	CreatedAt   *time.Time `db:"createdAt" json:"createdAt"`
-	UpdatedAt   *time.Time `db:"updatedAt" json:"updatedAt"`
-}
+func FindAllUsers(searchKey string, sortBy string, order string, limit int, offset int) (services.InfoUser, error) {
 
-func FindAllUsers(searchKey string, limit int, offset int) (services.InfoUser, error) {
-
-	sql := `SELECT * FROM "users" WHERE "fullName" ILIKE $1 ORDER BY "id" ASC Limit $2 OFFSET $3`
+	sql := `SELECT * FROM "users" WHERE "fullName" ILIKE $1 ORDER BY "` + sortBy + `"` + order + ` LIMIT $2 OFFSET $3`
 
 	sqlCount := `SELECT COUNT(*) FROM "users" WHERE "fullName" ILIKE $1`
 	result := services.InfoUser{}
-	dataUser := []User{}
+	dataUser := []services.User{}
 
 	err := db.Select(&dataUser, sql, "%"+searchKey+"%", limit, offset)
-
 	result.Data = dataUser
 
 	row := db.QueryRow(sqlCount, "%"+searchKey+"%")
-
 	err = row.Scan(&result.Count)
 	return result, err
 }
 
-func FindOneUser(id int) (User, error) {
+func FindOneUser(id int) (services.User, error) {
 	sql := `SELECT * FROM "users" WHERE "id" = $1`
-	data := User{}
+	data := services.User{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }
-func FindOneUserEmail(email string) (User, error) {
+func FindOneUserEmail(email string) (services.User, error) {
 	sql := `SELECT * FROM "users" WHERE "email" = $1`
-	data := User{}
+	data := services.User{}
 	err := db.Get(&data, sql, email)
 	return data, err
 }
-func FindOneUserByEmail(email string) (User, error) {
+func FindOneUserByEmail(email string) (services.User, error) {
 	sql := `SELECT * FROM "users" WHERE "email" = $1`
-	data := User{}
+	data := services.User{}
 	err := db.Get(&data, sql, email)
 	return data, err
 }
 
-func CreateUser(data User) (User, error) {
+func CreateUser(data services.UserForm) (services.UserForm, error) {
 	sql := `
 	INSERT INTO "users" ("email", "password", "fullName", "phoneNumber", "address", "role", "picture")
-	VALUES (:email, :password, :fullName, :phoneNumber, :address, COALESCE(NULLIF(:role,''),'customer'), :picture)
+	VALUES (:email, :password, :fullName, :phoneNumber, :address, COALESCE(NULLIF(:role,''),'customer'), COALESCE(NULLIF(:picture,''),'default.png'))
 	RETURNING *
 	`
-	result := User{}
+	result := services.UserForm{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -81,7 +64,7 @@ func CreateUser(data User) (User, error) {
 	return result, nil
 }
 
-func UpdateUser(data User) (User, error) {
+func UpdateUser(data services.UserForm) (services.UserForm, error) {
 	sql := `UPDATE "users" SET 
 	"email"=COALESCE(NULLIF(:email,''),"email"),
 	"password"=COALESCE(NULLIF(:password,''),"password"),
@@ -94,7 +77,7 @@ func UpdateUser(data User) (User, error) {
 	WHERE "id"=:id
 	RETURNING *
 	`
-	result := User{}
+	result := services.UserForm{}
 	rows, err := db.NamedQuery(sql, data)
 	for rows.Next() {
 		rows.StructScan(&result)
@@ -102,9 +85,9 @@ func UpdateUser(data User) (User, error) {
 	return result, err
 }
 
-func DeleteUser(id int) (User, error) {
+func DeleteUser(id int) (services.UserForm, error) {
 	sql := `DELETE FROM "users" WHERE "id" = $1 RETURNING *`
-	data := User{}
+	data := services.UserForm{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

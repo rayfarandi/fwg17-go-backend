@@ -27,7 +27,7 @@ func Login(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
-	form := models.User{}
+	form := services.UserForm{}
 
 	err := c.ShouldBind(&form)
 
@@ -120,7 +120,7 @@ func ForgotPassword(c *gin.Context) {
 
 		//mainflow
 		foundUser, _ := models.FindOneUserByEmail((found.Email))
-		data := models.User{
+		data := services.UserForm{
 			Id: foundUser.Id,
 		}
 		hash, _ := argonize.Hash([]byte(form.Password))

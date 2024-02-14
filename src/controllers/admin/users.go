@@ -17,16 +17,31 @@ import (
 )
 
 func ListAllUsers(c *gin.Context) {
+	searchKey := c.DefaultQuery("searchKey", "")
+	sortBy := c.DefaultQuery("sortBy", "id")
+	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
 	offset := (page - 1) * limit
 
-	searchKey := c.DefaultQuery("searchKey", "")
-	result, err := models.FindAllUsers(searchKey, limit, offset)
+	result, err := models.FindAllUsers(searchKey, sortBy, order, limit, offset)
+
+	totalPage := int(math.Ceil(float64(result.Count) / float64(limit)))
+	nextPage := page + 1
+	if nextPage > totalPage {
+		nextPage = 0
+	}
+	prevPage := page - 1
+	if prevPage < 1 {
+		prevPage = 0
+	}
+
 	pageInfo := services.PageInfo{
 		Page:      page,
 		Limit:     limit,
-		TotalPage: int(math.Ceil(float64(result.Count) / float64(limit))),
+		NextPage:  nextPage,
+		PrevPage:  prevPage,
+		TotalPage: totalPage,
 		TotalData: result.Count,
 	}
 	if err != nil {
@@ -71,7 +86,7 @@ func DetailUser(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-	data := models.User{}
+	data := services.UserForm{}
 
 	emailInput := c.PostForm("email")
 	passwordInput := c.PostForm("password")
@@ -94,7 +109,21 @@ func CreateUser(c *gin.Context) {
 	c.ShouldBind(&data)
 
 	//upload
-	data.Picture = lib.Upload(c, "picture", "users")
+	_, err := c.FormFile("picture")
+	if err == nil {
+		file, err := lib.Upload(c, "picture", "users")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+				Success: false,
+				Message: err.Error(),
+			})
+			return
+		}
+		data.Picture = file
+	} else {
+		data.Picture = ""
+	}
 	//upload
 
 	plain := []byte(data.Password)
@@ -127,15 +156,40 @@ func CreateUser(c *gin.Context) {
 
 func UpdateUser(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := models.User{}
+	data := services.UserForm{}
 
-	c.Bind(&data)
 	data.Id = id
 
-	//upload
+	isExist, err := models.FindOneUser(id)
+	if err != nil {
+		fmt.Println(isExist, err)
+		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+			Success: false,
+			Message: "User not found",
+		})
+		return
+	}
+
 	c.ShouldBind(&data)
 
-	data.Picture = lib.Upload(c, "picture", "users")
+	//upload
+	_, err = c.FormFile("picture")
+	if err == nil {
+		err := os.Remove("./" + isExist.Picture)
+		if err != nil {
+		}
+
+		file, err := lib.Upload(c, "picture", "users")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+				Success: false,
+				Message: err.Error(),
+			})
+			return
+		}
+		data.Picture = file
+	}
 	//upload
 	plain := []byte(data.Password)
 	hash, err := argonize.Hash(plain)
@@ -166,11 +220,11 @@ func UpdateUser(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := models.DeleteUser(id)
+	data, err := models.FindOneUser(id)
 
 	if err != nil {
-		log.Fatalln(err)
-		if strings.HasPrefix(err.Error(), "sql:no rows") {
+		fmt.Println(data, err)
+		if strings.HasPrefix(err.Error(), "sql: no rows in result set") {
 			c.JSON(http.StatusNotFound, &services.ResponseOnly{
 				Success: false,
 				Message: "No data",
@@ -183,14 +237,14 @@ func DeleteUser(c *gin.Context) {
 		})
 		return
 	}
-	//hapus file picture
-	if user.Picture != nil {
-		fileName := *user.Picture
-		fileDes := fmt.Sprintf("uploads/users/%v", fileName)
-		os.Remove(fileDes)
-		fmt.Println(fileDes)
+	user, err := models.DeleteUser(id)
+
+	if user.Picture != "" {
+		err := os.Remove("./" + user.Picture)
+		if err != nil {
+			fmt.Println("Error deleting file:", err)
+		}
 	}
-	//
 
 	c.JSON(http.StatusOK, &services.Response{
 		Success: true,
