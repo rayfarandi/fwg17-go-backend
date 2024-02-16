@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -15,16 +16,33 @@ import (
 )
 
 func ListAllProduct(c *gin.Context) {
+	searchKey := c.DefaultQuery("searchKey", "")
+	// category := c.DefaultQuery("category", "")
+	sortBy := c.DefaultQuery("sortBy", "id")
+	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
 	offset := (page - 1) * limit
 
-	searchKey := c.DefaultQuery("searchKey", "")
-	result, err := models.FindAllProduct(searchKey, limit, offset)
+	// result, err := models.FindAllProduct(searchKey, category, sortBy, order, limit, offset)
+	result, err := models.FindAllProduct(searchKey, sortBy, order, limit, offset)
+
+	totalPage := int(math.Ceil(float64(result.Count) / float64(limit)))
+	nextPage := page + 1
+	if nextPage > totalPage {
+		nextPage = 0
+	}
+	prevPage := page - 1
+	if prevPage < 1 {
+		prevPage = 0
+	}
+
 	pageInfo := services.PageInfo{
 		Page:      page,
 		Limit:     limit,
-		TotalPage: int(math.Ceil(float64(result.Count) / float64(limit))),
+		NextPage:  nextPage,
+		PrevPage:  prevPage,
+		TotalPage: totalPage,
 		TotalData: result.Count,
 	}
 	if err != nil {
@@ -47,7 +65,7 @@ func DetailProduct(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := models.FindOneProduct(id)
 	if err != nil {
-		// log.Println(err)
+		fmt.Println(err)
 		if strings.HasPrefix(err.Error(), "sql: no rows") {
 			c.JSON(http.StatusNotFound, &services.ResponseOnly{
 				Success: false,
@@ -69,35 +87,36 @@ func DetailProduct(c *gin.Context) {
 }
 
 func CreateProduct(c *gin.Context) {
-	data := models.Product{}
+	data := services.ProductForm{}
 
+	errBind := c.ShouldBind(&data)
 	//upload
-	c.ShouldBind(&data)
 
-	data.Image = lib.Upload(c, "image", "product")
+	_, err := c.FormFile("image")
+	if err == nil {
+		file, err := lib.Upload(c, "image", "product")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+				Success: false,
+				Message: err.Error(),
+			})
+			return
+		}
+		data.Image = file
+	} else {
+		data.Image = ""
+	}
 	//upload
-	nameInput := c.PostForm("name")
-
-	if nameInput == "" {
-		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
+	if errBind != nil {
+		fmt.Println(errBind)
+		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
 			Success: false,
-			Message: "Name Must Not Be Empty",
+			Message: "Internal server error",
 		})
 		return
 	}
 
-	checkProduct, _ := models.FindOneProductByName(nameInput)
-	checkProductName := checkProduct.Name
-
-	if *checkProductName == nameInput {
-		c.JSON(http.StatusBadRequest, &services.ResponseOnly{
-			Success: false,
-			Message: "Product Name Already Exist",
-		})
-		return
-	}
-
-	// c.Bind(&data)
 	product, err := models.CreateProduct(data)
 	if err != nil {
 		log.Println(err)
@@ -117,46 +136,50 @@ func CreateProduct(c *gin.Context) {
 
 func UpdateProduct(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	data := services.ProductForm{}
 
-	//check product
-	nameInput := c.PostForm("name")
+	data.Id = id
+
 	checkProduct, err := models.FindOneProduct(id)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "sql: no rows") {
-			c.JSON(http.StatusBadRequest, &services.ResponseOnly{
-				Success: false,
-				Message: "Product not found",
-			})
-			return
-		}
-		fmt.Println(checkProduct)
+		fmt.Println(checkProduct, err)
+		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+			Success: false,
+			Message: "Product not found",
+		})
+		return
 	}
-	if nameInput != "" {
-		checkProduct, _ := models.FindOneProductByName(nameInput)
-		if nameInput == *checkProduct.Name {
-			c.JSON(http.StatusBadRequest, &services.ResponseOnly{
-				Success: false,
-				Message: "Name already used",
-			})
-			return
-		}
-	}
+
+	c.ShouldBind(&data)
 
 	//
 
-	data := models.Product{}
-
-	c.ShouldBind(&data)
 	// c.Bind(&data)
 	//upload
 
-	data.Image = lib.Upload(c, "image", "product")
+	_, err = c.FormFile("image")
+	if err == nil {
+		err := os.Remove("./" + checkProduct.Image)
+		if err != nil {
+		}
+
+		file, err := lib.Upload(c, "image", "product")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
+				Success: false,
+				Message: err.Error(),
+			})
+			return
+		}
+		data.Image = file
+	}
 	//upload
 	data.Id = id
 
 	product, err := models.UpdateProduct(data)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err, product)
 		c.JSON(http.StatusInternalServerError, &services.ResponseOnly{
 			Success: false,
 			Message: "Internal server error",
@@ -173,9 +196,9 @@ func UpdateProduct(c *gin.Context) {
 
 func DeleteProduct(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	product, err := models.DeleteProduct(id)
+	data, err := models.FindOneProduct(id)
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(data, err)
 		if strings.HasPrefix(err.Error(), "sql:no rows") {
 			c.JSON(http.StatusNotFound, &services.ResponseOnly{
 				Success: false,
@@ -188,6 +211,14 @@ func DeleteProduct(c *gin.Context) {
 			Message: "Internal Server Error",
 		})
 		return
+	}
+	product, err := models.DeleteProduct(id)
+
+	if product.Image != "" {
+		err := os.Remove("./" + product.Image)
+		if err != nil {
+			fmt.Println("Error deleting file:", err)
+		}
 	}
 
 	c.JSON(http.StatusOK, &services.Response{

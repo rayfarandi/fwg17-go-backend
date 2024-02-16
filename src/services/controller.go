@@ -39,12 +39,29 @@ type UserForm struct {
 }
 
 type InfoProduct struct {
-	Data  interface{}
+	Data []Product
+	// Data  interface{}
 	Count int
 }
 
-// Product Form
+// Product models
 type Product struct {
+	Id            int            `db:"id" json:"id"`
+	Name          string         `db:"name" json:"name" form:"name"`
+	Description   sql.NullString `db:"description" json:"description"`
+	Image         string         `db:"image" json:"image" form:"image"`
+	Discount      sql.NullInt64  `db:"discount" json:"discount"`
+	IsRecommended bool           `db:"isRecommended" json:"isRecommended" form:"isRecommended"`
+	BasePrice     int            `db:"basePrice" json:"basePrice" form:"basePrice"`
+	// Category      sql.NullString `db:"category" json:"category"`
+	// Tag           sql.NullString `db:"tag" json:"tag"`
+	// Rating        sql.NullInt64  `db:"rating" json:"rating"`
+	CreatedAt time.Time    `db:"createdAt" json:"createdAt"`
+	UpdatedAt sql.NullTime `db:"updatedAt" json:"updatedAt"`
+}
+
+// Product Form
+type ProductForm struct {
 	Id            int          `db:"id" json:"id"`
 	Name          *string      `db:"name" json:"name" form:"name"`
 	Description   *string      `db:"description" json:"description"`
@@ -60,7 +77,7 @@ type InfoProductSize struct {
 	Data  interface{}
 	Count int
 }
-type InfoProductSizeVariant struct {
+type InfoProductVariant struct {
 	Data  interface{}
 	Count int
 }

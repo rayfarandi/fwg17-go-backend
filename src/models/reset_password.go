@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"time"
+
+	"github.com/rayfarandi/fwg17-go-backend/src/services"
 )
 
 type FormReset struct {
@@ -38,9 +40,9 @@ func CreateResetPassword(data FormReset) (FormReset, error) {
 	return result, err
 }
 
-func DeleteResetPassword(id int) (User, error) {
+func DeleteResetPassword(id int) (services.User, error) {
 	sql := `DELETE FROM "resetPassword" WHERE "id" = $1 RETURNING *`
-	data := User{}
+	data := services.User{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

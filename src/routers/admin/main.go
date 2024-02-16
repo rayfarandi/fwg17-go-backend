@@ -17,4 +17,6 @@ func Combine(r *gin.RouterGroup) {
 	ProductRatingsRouter(r.Group("/productRatings"))
 	CategoriesRouter(r.Group("/categories"))
 	ProductCategoriesRouter(r.Group("/productCategories"))
+	PromoRouter(r.Group("/promo"))
+
 }

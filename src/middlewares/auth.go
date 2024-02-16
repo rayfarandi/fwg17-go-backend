@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/KEINOS/go-argonize"
@@ -23,13 +24,15 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			user := data.(*services.User)
 			return jwt.MapClaims{
-				"id": user.Id,
+				"id":   user.Id,
+				"role": user.Role,
 			}
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &services.User{
-				Id: int(claims["id"].(float64)),
+				Id:   int(claims["id"].(float64)),
+				Role: claims["role"].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -54,15 +57,22 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 			if decoded.IsValidPassword(plain) {
 
 				return &services.User{
-					Id: found.Id,
+					Id:   found.Id,
+					Role: found.Role,
 				}, nil
 			} else {
 				return nil, errors.New("invalid_password")
 			}
 		},
-		// Authorizator: func(data interface{}, c *gin.Context) bool {
-		// 	return true
-		// },
+		Authorizator: func(data interface{}, c *gin.Context) bool {
+			user := data.(*services.User)
+			if strings.HasPrefix(c.Request.URL.Path, "/admin") {
+				if user.Role != "admin" {
+					return false
+				}
+			}
+			return true
+		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(http.StatusUnauthorized, &services.ResponseOnly{
 				Success: false,
