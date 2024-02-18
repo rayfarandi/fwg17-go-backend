@@ -76,26 +76,28 @@ func ForgotPassword(c *gin.Context) {
 	c.ShouldBind(&form)
 	if form.Email != "" {
 		found, _ := models.FindOneUserEmail(form.Email)
-		if found.Id != 0 {
-			formReset := models.FormReset{
-				Otp:   lib.RandomNumberStr(6),
-				Email: found.Email,
-			}
-			models.CreateResetPassword(formReset)
-			//start send email
-			fmt.Println(formReset.Otp)
-			//end send email
-			c.JSON(http.StatusOK, &services.ResponseOnly{
-				Success: true,
-				Message: "OTP has been sent to your email",
-			})
-			return
-		} else {
+
+		if found.Id == 0 {
 			c.JSON(http.StatusBadRequest, &services.ResponseOnly{
 				Success: false,
-				Message: "Failid to reset",
+				Message: "email not registered... failed to reset password",
 			})
+			return
 		}
+		formReset := models.FormReset{
+			Otp:   lib.RandomNumberStr(6),
+			Email: found.Email,
+		}
+		models.CreateResetPassword(formReset)
+		//start send email
+		fmt.Println(formReset.Otp)
+		//end send email
+		c.JSON(http.StatusOK, &services.ResponseOnly{
+			Success: true,
+			Message: "OTP has been sent to your email",
+		})
+		return
+
 	}
 
 	if form.Otp != "" {

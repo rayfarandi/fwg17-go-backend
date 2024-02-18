@@ -15,12 +15,12 @@ type ProductVariant struct {
 	UpdatedAt       *time.Time `db:"updatedAt" json:"updatedAt"`
 }
 
-func FindAllProductVariant(searchKey string, limit int, offset int) (services.InfoProduct, error) {
+func FindAllProductVariant(searchKey string, limit int, offset int) (services.InfoProductVariant, error) {
 
 	sql := `SELECT * FROM "productVariant" WHERE "name" ILIKE $1 ORDER BY "id" ASC Limit $2 OFFSET $3`
 
 	sqlCount := `SELECT COUNT(*) FROM "productVariant" WHERE "name" ILIKE $1`
-	result := services.InfoProduct{}
+	result := services.InfoProductVariant{}
 	dataProductVariant := []ProductVariant{}
 
 	err := db.Select(&dataProductVariant, sql, "%"+searchKey+"%", limit, offset)

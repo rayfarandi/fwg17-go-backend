@@ -74,6 +74,25 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 			return true
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
+
+			//menampilkan pesan error jika salah memasukan email or pass
+			// if strings.HasPrefix(c.Request.URL.Path, "/login") {
+			if strings.HasPrefix(c.Request.URL.Path, "/auth/login") {
+				c.JSON(http.StatusUnauthorized, &services.ResponseOnly{
+					Success: false,
+					Message: "wrong Email or password",
+				})
+				return
+			}
+			// if strings.HasPrefix(c.Request.URL.Path, "/forgot-password") {
+			if strings.HasPrefix(c.Request.URL.Path, "/auth/forgot-password") {
+				c.JSON(http.StatusUnauthorized, &services.ResponseOnly{
+					Success: false,
+					Message: "email not registered",
+				})
+				return
+			}
+
 			c.JSON(http.StatusUnauthorized, &services.ResponseOnly{
 				Success: false,
 				Message: "Unauthorized",
