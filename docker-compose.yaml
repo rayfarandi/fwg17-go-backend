@@ -22,8 +22,8 @@ services:   # daftar container yg akan di buat
       - 5444:5432
     environment:
       - POSTGRES_PASSWORD=1
-    # volumes:
-    #   - dataCoffeeGo:/var/lib/postgresql/data
+    volumes:
+      - dataCoffeeShop:/var/lib/postgresql/data
     networks:
       - coffee-shop-go
     restart: always
@@ -33,13 +33,14 @@ services:   # daftar container yg akan di buat
   # masih mencoba
     
 # volumes:
-#     dataCoffeeGo:
+#     dataCoffeeShop:
 #       external:
 #         true
 
 
-name: coffee-shop-go
+# name: coffee-shop-go
 
 
-networks:
-  coffee-shop-go:
+# networks:
+#   coffee-shop-go:
+
