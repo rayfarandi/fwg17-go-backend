@@ -23,6 +23,5 @@ func CombineAdmin(r *gin.RouterGroup) {
 	PromoRouter(r.Group("/promo"))
 	SizesRouter(r.Group("/sizes"))
 	TagsRouter(r.Group("/tags"))
-	TestimonialRouter(r.Group("/testimonial"))
 	VariantsRouter(r.Group("/variants"))
 }
