@@ -1,18 +1,20 @@
 package lib
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
+
 	_ "github.com/lib/pq"
 )
 
-func conn() *sqlx.DB {
-	db, err := sqlx.Connect("postgres", "user=postgres dbname=go-coffee password=1 sslmode=disable")
+func connectDB() *sqlx.DB {
+	db, err := sqlx.Connect("postgres", "user=postgres dbname=go-coffee-go password=1 sslmode=disable")
+
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err)
 	}
 	return db
 }
 
-var DB *sqlx.DB = conn()
+var DB *sqlx.DB = connectDB()

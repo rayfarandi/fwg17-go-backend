@@ -1,14 +1,15 @@
-package admin
+package routers
 
 import (
+	"github.com/rayfarandi/fwg17-go-backend/src/controllers"
+
 	"github.com/gin-gonic/gin"
-	controllers_admin "github.com/rayfarandi/fwg17-go-backend/src/controllers/admin"
 )
 
 func ProductCategoriesRouter(r *gin.RouterGroup) {
-	r.GET("", controllers_admin.ListAllProductCategories)
-	r.GET("/:id", controllers_admin.DetailProductCategories)
-	r.POST("", controllers_admin.CreateProductCategories)
-	r.PATCH("/:id", controllers_admin.UpdateProductCategories)
-	r.DELETE("/:id", controllers_admin.DeleteProductCategories)
+	r.GET("", controllers.ListAllProductCategories)
+	r.GET("/:id", controllers.DetailProductCategories)
+	r.POST("", controllers.CreateProductCategories)
+	r.PATCH("/:id", controllers.UpdateProductCategories)
+	r.DELETE("/:id", controllers.DeleteProductCategories)
 }
