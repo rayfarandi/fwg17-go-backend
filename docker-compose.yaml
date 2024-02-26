@@ -4,28 +4,27 @@ services:   # daftar container yg akan di buat
   golang:      # container web
     build: .        # lokasi dockerfile
     ports:
-      - 127.0.0.1:8888:8888
+      - 8814:8888
     working_dir: /app
     volumes:
       - .:/app
     environment:
       - APP_SECRET=123ABC@12
-    networks:
-      - coffee-shop-go
     depends_on:
       - db
     restart: always
+
   db:       # container db
-    container_name: go-coffee-go
+    container_name: be-go-coffee-go
     image: postgres
     ports:          #  ports di forward hanya selama develop
       - 5444:5432
-    environment:
-      - POSTGRES_PASSWORD=1
     volumes:
-      - dataCoffeeShop:/var/lib/postgresql/data
-    networks:
-      - coffee-shop-go
+      - ./db-data:/var/lib/postgresql/16/main
+    environment:
+      - POSTGRES_DB=go-coffee-go
+      - POSTGRES_PASSWORD=1
+      - POSTGRES_USER=postgres
     restart: always
     
 

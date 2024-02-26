@@ -9,7 +9,7 @@ RUN go mod tidy
 
 
 
-EXPOSE 8888
+EXPOSE 8814
 
 # dijalankan saat docker container di jalankan
 CMD go run .            
