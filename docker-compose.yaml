@@ -1,15 +1,12 @@
 version: "3.8"
 
-services:   # daftar container yg akan di buat
+services:   # daftar container yg di buat
   golang:      # container web
     build: .        # lokasi dockerfile
     ports:
       - 8814:8888
-    working_dir: /app
     volumes:
       - .:/app
-    environment:
-      - APP_SECRET=123ABC@12
     depends_on:
       - db
     restart: always
@@ -27,19 +24,4 @@ services:   # daftar container yg akan di buat
       - POSTGRES_USER=postgres
     restart: always
     
-
-
-  # masih mencoba
-    
-# volumes:
-#     dataCoffeeShop:
-#       external:
-#         true
-
-
-# name: coffee-shop-go
-
-
-# networks:
-#   coffee-shop-go:
 
