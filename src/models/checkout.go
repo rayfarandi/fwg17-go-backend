@@ -3,22 +3,20 @@ package models
 import (
 	"database/sql"
 	"fmt"
-
-	"github.com/rayfarandi/fwg17-go-backend/src/service"
 )
 
 type OrderProducts struct {
-	Id               int            `db:"id" json:"id"`
-	Quantity         int            `db:"quantity" json:"quantity"`
-	OrderId          int            `db:"orderId" json:"orderId"`
-	ProductName      string         `db:"productName" json:"productName"`
-	Image            string         `db:"image" json:"image"`
-	BasePrice        int            `db:"basePrice" json:"basePrice"`
-	Discount         int            `db:"discount" json:"discount"`
+	Id               int    `db:"id" json:"id"`
+	Quantity         int    `db:"quantity" json:"quantity"`
+	OrderId          int    `db:"orderId" json:"orderId"`
+	ProductName      string `db:"productName" json:"productName"`
+	Image            string `db:"image" json:"image"`
+	BasePrice        int    `db:"basePrice" json:"basePrice"`
+	Discount         int    `db:"discount" json:"discount"`
 	Tag              sql.NullString `db:"tag" json:"tag"`
-	Size             string         `db:"size" json:"size"`
-	Variant          string         `db:"variant" json:"variant"`
-	DeliveryShipping string         `db:"deliveryShipping" json:"deliveryShipping"`
+	Size             string `db:"size" json:"size"`
+	Variant          string `db:"variant" json:"variant"`
+	DeliveryShipping string `db:"deliveryShipping" json:"deliveryShipping"`
 }
 
 type InfoOP struct {
@@ -93,23 +91,23 @@ func CountTotalTransaction(orderId int) (OrderForm, error) {
 	return result, err
 }
 
-func GetAddress(userId int) (service.UserForm, error) {
+func GetAddress(userId int) (UserForm, error) {
 	sql := `select "address" from "users" where "id" = $1`
-	data := service.UserForm{}
+	data := UserForm{}
 	err := db.Get(&data, sql, userId)
 	return data, err
 }
 
-func GetFullName(userId int) (service.UserForm, error) {
+func GetFullName(userId int) (UserForm, error) {
 	sql := `select "fullName" from "users" where "id" = $1`
-	data := service.UserForm{}
+	data := UserForm{}
 	err := db.Get(&data, sql, userId)
 	return data, err
 }
 
-func GetEmail(userId int) (service.UserForm, error) {
+func GetEmail(userId int) (UserForm, error) {
 	sql := `select "email" from "users" where "id" = $1`
-	data := service.UserForm{}
+	data := UserForm{}
 	err := db.Get(&data, sql, userId)
 	return data, err
 }
@@ -164,7 +162,7 @@ func GetOrderProducts(orderId int, userId int, sortBy string, order string) (Inf
 	JOIN "variant" "v" on ("v"."id" = "od"."variantId")
 	JOIN "orders" "o" on ("o"."id" = "od"."orderId")
 	WHERE "od"."orderId" = $1
-	ORDER BY "` + sortBy + `" ` + order + `
+	ORDER BY "`+sortBy+`" `+order+`
 	`
 
 	sqlCount := `
@@ -191,16 +189,16 @@ func GetOrderProducts(orderId int, userId int, sortBy string, order string) (Inf
 	return result, err
 }
 
-func GetOneSize(size string) (service.Sizes, error) {
+func GetOneSize(size string) (Sizes, error) {
 	sql := `SELECT * FROM "sizes" WHERE "size" ILIKE $1`
-	data := service.Sizes{}
+	data := Sizes{}
 	err := db.Get(&data, sql, size)
 	return data, err
 }
 
-func GetOneVariant(name string) (service.Variants, error) {
+func GetOneVariant(name string) (Variants, error) {
 	sql := `SELECT * FROM "variant" WHERE "name" ILIKE $1`
-	data := service.Variants{}
+	data := Variants{}
 	err := db.Get(&data, sql, name)
 	return data, err
 }

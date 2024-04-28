@@ -17,7 +17,7 @@ import (
 
 var db *sqlx.DB = lib.DB
 
-func GetSizePr(c *gin.Context) {
+func GetPriceSize(c *gin.Context) {
 	size := c.Query("size")
 	dataSize, err := models.GetOneSize(size)
 	if err != nil {
@@ -44,7 +44,7 @@ func GetSizePr(c *gin.Context) {
 	})
 }
 
-func GetVariantPr(c *gin.Context) {
+func GetPriceVariant(c *gin.Context) {
 	name := c.Query("name")
 	dataVariant, err := models.GetOneVariant(name)
 	if err != nil {
@@ -97,7 +97,7 @@ func Checkout(c *gin.Context) {
 	dataOrder.OrderNumber = lib.RandomNumberStr(9)
 	dataOrder.UserId = userId
 	dataOrder.Status = "On Progress"
-	dataOrder.DeliveryFee = 1000
+	dataOrder.DeliveryFee = 5000
 
 	if c.PostForm("deliveryAddress") == "" {
 		user, err := models.GetAddress(userId)
@@ -139,7 +139,7 @@ func Checkout(c *gin.Context) {
 
 	order, err := models.InsertOrder(dataOrder)
 	if err != nil {
-		fmt.Println("error", err, order)
+		fmt.Println("error aja", err, order)
 		tx.Rollback()
 		c.JSON(http.StatusBadRequest, &service.ResponseOnly{
 			Success: false,

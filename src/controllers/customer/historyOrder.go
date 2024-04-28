@@ -22,7 +22,7 @@ func ListAllOrders(c *gin.Context) {
 	sortBy := c.DefaultQuery("sortBy", "id")
 	order := c.DefaultQuery("order", "DESC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "4"))
 	offset := (page - 1) * limit
 
 	result, err := models.FindAllOrdersByUserId(status, userId, sortBy, order, limit, offset)
