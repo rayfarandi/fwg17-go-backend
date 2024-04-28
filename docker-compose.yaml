@@ -4,7 +4,7 @@ services: # ==> daftar services yg di gunakan
   golang:      # ==> container golang
     build: .
     ports:
-      - 127.0.0.1:7773:8888
+      - 7773:8888
     working_dir: /app
     volumes:
       - .:/app
