@@ -1,14 +1,13 @@
-FROM golang:latest
+FROM golang
 
 WORKDIR /app
 COPY . .
 
-# dijalankan saat build image
+
 RUN go mod tidy
 
-EXPOSE 8814
+EXPOSE 7773
 
-# dijalankan saat docker container di jalankan
+
 CMD go run .            
 
-# komentar

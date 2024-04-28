@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/rayfarandi/fwg17-go-backend/src/routers"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -20,10 +18,10 @@ func main() {
 		AllowHeaders:    []string{"Content-Type, Authorization"},
 	}))
 	//dimatikan saat build image docker
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 	//
 
 	r.Static("/uploads", "./uploads")
@@ -34,6 +32,6 @@ func main() {
 			Message: "Resource not found",
 		})
 	})
-	r.Run("127.0.0.1:8888") //local
-	// r.Run(":8888") //docker
+	// r.Run("127.0.0.1:8888") //local
+	r.Run(":8888") //docker
 }

@@ -139,7 +139,7 @@ func Checkout(c *gin.Context) {
 
 	order, err := models.InsertOrder(dataOrder)
 	if err != nil {
-		fmt.Println("error aja", err, order)
+		fmt.Println("error", err, order)
 		tx.Rollback()
 		c.JSON(http.StatusBadRequest, &service.ResponseOnly{
 			Success: false,
