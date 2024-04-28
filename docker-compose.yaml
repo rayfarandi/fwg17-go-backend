@@ -5,7 +5,6 @@ services: # ==> daftar services yg di gunakan
     build: .
     ports:
       - 7773:8888
-    working_dir: /app
     volumes:
       - .:/app
     environment:

@@ -1,4 +1,4 @@
-FROM golang
+FROM golang:latest
 
 WORKDIR /app
 COPY . .
@@ -6,7 +6,7 @@ COPY . .
 
 RUN go mod tidy
 
-EXPOSE 7773
+EXPOSE 8888
 
 
 CMD go run .            
