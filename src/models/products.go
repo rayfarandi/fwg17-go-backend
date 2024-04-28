@@ -1,43 +1,44 @@
 package models
 
 import (
-	"database/sql"
 	"encoding/base64"
 	"fmt"
 	"time"
+
+	"github.com/LukaGiorgadze/gonull"
 )
 
 type Product struct {
 	Id            int            `db:"id" json:"id"`
 	Name          string         `db:"name" json:"name"`
-	Description   sql.NullString `db:"description" json:"description"`
-	Image         sql.NullString `db:"image" json:"image"`
-	Discount      sql.NullInt64  `db:"discount" json:"discount"`
+	Description   gonull.Nullable[string] `db:"description" json:"description"`
+	Image         gonull.Nullable[string] `db:"image" json:"image"`
+	Discount      gonull.Nullable[int]  `db:"discount" json:"discount"`
 	IsRecommended bool           `db:"isRecommended" json:"isRecommended"`
 	TagId         int            `db:"tagId" json:"tagId"`
 	BasePrice     int            `db:"basePrice" json:"basePrice"`
-	Category      sql.NullString `db:"category" json:"category"`
-	Tag           sql.NullString `db:"tag" json:"tag"`
-	Rating        sql.NullInt64  `db:"rating" json:"rating"`
+	Category      gonull.Nullable[string] `db:"category" json:"category"`
+	Tag           gonull.Nullable[string] `db:"tag" json:"tag"`
+	Rating        gonull.Nullable[int]  `db:"rating" json:"rating"`
 	CreatedAt     time.Time      `db:"createdAt" json:"createdAt"`
-	UpdatedAt     sql.NullTime   `db:"updatedAt" json:"updatedAt"`
+	UpdatedAt     gonull.Nullable[time.Time]   `db:"updatedAt" json:"updatedAt"`
 }
 
 type ProductDetails struct {
 	Id               int            `db:"id" json:"id"`
 	Name             string         `db:"name" json:"name"`
-	Description      sql.NullString `db:"description" json:"description"`
+	Description      gonull.Nullable[string] `db:"description" json:"description"`
 	BasePrice        int            `db:"basePrice" json:"basePrice"`
 	Image            string         `db:"image" json:"image"`
-	Discount         sql.NullInt64  `db:"discount" json:"discount"`
-	IsRecommended    sql.NullBool   `db:"isRecommended" json:"isRecommended"`
-	Tag              sql.NullString `db:"tag" json:"tag"`
-	Rating           sql.NullInt64  `db:"rating" json:"rating"`
-	Review           sql.NullInt64  `db:"review" json:"review"`
+	Discount         gonull.Nullable[int]  `db:"discount" json:"discount"`
+	IsRecommended    gonull.Nullable[bool]   `db:"isRecommended" json:"isRecommended"`
+	Tag              gonull.Nullable[string] `db:"tag" json:"tag"`
+	Rating           gonull.Nullable[int]  `db:"rating" json:"rating"`
+	Review           gonull.Nullable[int]  `db:"review" json:"review"`
 	VariantsProducts string         `db:"variantsProducts" json:"variantsProducts"`
 	ProductImages    string         `db:"productImages" json:"productImages"`
 	CreatedAt        time.Time      `db:"createdAt" json:"createdAt"`
-	UpdatedAt        sql.NullTime   `db:"updatedAt" json:"updatedAt"`
+	UpdatedAt        gonull.Nullable[time.Time]   `db:"updatedAt" json:"updatedAt"`
 }
 
 type ProductForm struct {
@@ -45,12 +46,12 @@ type ProductForm struct {
 	Name          *string      `db:"name" json:"name" form:"name"`
 	Description   *string      `db:"description" json:"description"`
 	BasePrice     *int         `db:"basePrice" json:"basePrice" form:"basePrice"`
-	Image         string       `db:"image" json:"image" form:"image"`
+	Image         string       `db:"image" json:"image"`
 	Discount      *int         `db:"discount" json:"discount" form:"discount"`
 	IsRecommended *bool        `db:"isRecommended" json:"isRecommended" form:"isRecommended"`
 	TagId         *int         `db:"tagId" json:"tagId" form:"tagId"`
 	CreatedAt     time.Time    `db:"createdAt" json:"createdAt"`
-	UpdatedAt     sql.NullTime `db:"updatedAt" json:"updatedAt"`
+	UpdatedAt     gonull.Nullable[time.Time] `db:"updatedAt" json:"updatedAt"`
 }
 
 type InfoP struct {
@@ -90,10 +91,10 @@ func FindAllProducts(searchKey string, category string, sortBy string, order str
 	result := InfoP{}
 	data := []Product{}
 	err := db.Select(&data, sql, "%"+searchKey+"%", "%"+category+"%", limit, offset)
-	if err != nil {
+	if err != nil{
 		return result, err
 	}
-
+	
 	result.Data = data
 
 	row := db.QueryRow(sqlCount, "%"+searchKey+"%", "%"+category+"%")
@@ -142,7 +143,7 @@ func FindOneProducts(id int) (ProductDetails, error) {
 	encoded := base64.StdEncoding.EncodeToString([]byte(data.VariantsProducts))
 	decodedVariants, error := base64.StdEncoding.DecodeString(encoded)
 	if error != nil {
-		fmt.Println("decode error:", error)
+		fmt.Println("decode error", error)
 		return data, error
 	}
 
