@@ -15,10 +15,10 @@ services: # ==> daftar services yg di gunakan
       - DB_PORT=5432
       - DB_USER=postgres.viowfpzjtxzzugeftjpm
       - DB_PASSWORD=AIeax8knSVmXirIq
-    networks:
-      - coffee-shop-networking
-    depends_on:
-      - db
+    # networks:
+    #   - coffee-shop-networking
+    # depends_on:
+    #   - db
     restart: always
 
 
