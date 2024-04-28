@@ -1,5 +1,7 @@
 github.com/KEINOS/go-argonize v1.1.0 h1:dzoBMmHMBSHtYzcmRmAksP4s2JKoGmqTGJ0zyhBNkRY=
 github.com/KEINOS/go-argonize v1.1.0/go.mod h1:PmRTE9OT0iZglgJf79+JyVwRKIau4fqWCuNYxTYAuj0=
+github.com/LukaGiorgadze/gonull v1.2.0 h1:I+/pHqr9dySqf6A4agJazrFA8XlrUohqdb10nFIaxJU=
+github.com/LukaGiorgadze/gonull v1.2.0/go.mod h1:iGbXOBV6y4VkT14x//F3yZiIxe1ylZYor05pZb0/9TM=
 github.com/appleboy/gin-jwt/v2 v2.9.2 h1:GeS3lm9mb9HMmj7+GNjYUtpp3V1DAQ1TkUFa5poiZ7Y=
 github.com/appleboy/gin-jwt/v2 v2.9.2/go.mod h1:mxGjKt9Lrx9Xusy1SrnmsCJMZG6UJwmdHN9bN27/QDw=
 github.com/appleboy/gofight/v2 v2.1.2 h1:VOy3jow4vIK8BRQJoC/I9muxyYlJ2yb9ht2hZoS3rf4=
