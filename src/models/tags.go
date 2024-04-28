@@ -1,8 +1,23 @@
 package models
 
-import "github.com/rayfarandi/fwg17-go-backend/src/service"
+import (
+	"database/sql"
+	"time"
+)
 
-func FindAllTags(searchKey string, sortBy string, order string, limit int, offset int) (service.InfoT, error) {
+type Tags struct {
+	Id              int           `db:"id" json:"id"`
+	Name            string        `db:"name" json:"name" form:"name" binding:"required,min=3"`
+	CreatedAt       time.Time     `db:"createdAt" json:"createdAt"`
+	UpdatedAt       sql.NullTime  `db:"updatedAt" json:"updatedAt"`
+}
+
+type InfoT struct {
+	Data  []Tags
+	Count int
+}
+
+func FindAllTags(searchKey string, sortBy string, order string, limit int, offset int) (InfoT, error) {
 	sql := `
 	SELECT * FROM "tags" 
 	WHERE "name" ILIKE $1
@@ -14,10 +29,10 @@ func FindAllTags(searchKey string, sortBy string, order string, limit int, offse
 	WHERE "name" ILIKE $1
 	`
 
-	result := service.InfoT{}
-	data := []service.Tags{}
+	result := InfoT{}
+	data := []Tags{}
 	err := db.Select(&data, sql, "%"+searchKey+"%", limit, offset)
-	if err != nil {
+	if err != nil{
 		return result, err
 	}
 	result.Data = data
@@ -28,18 +43,18 @@ func FindAllTags(searchKey string, sortBy string, order string, limit int, offse
 	return result, err
 }
 
-func FindOneTags(id int) (service.Tags, error) {
+func FindOneTags(id int) (Tags, error) {
 	sql := `SELECT * FROM "tags" WHERE id = $1`
-	data := service.Tags{}
+	data := Tags{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }
 
-func CreateTags(data service.Tags) (service.Tags, error) {
+func CreateTags(data Tags) (Tags, error) {
 	sql := `INSERT INTO "tags" ("name") VALUES (:name)
 	RETURNING *
 	`
-	result := service.Tags{}
+	result := Tags{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -52,14 +67,14 @@ func CreateTags(data service.Tags) (service.Tags, error) {
 	return result, err
 }
 
-func UpdateTags(data service.Tags) (service.Tags, error) {
+func UpdateTags(data Tags) (Tags, error) {
 	sql := `UPDATE "tags" SET
 	"name"=COALESCE(NULLIF(:name, ''),"name"),
 	"updatedAt"=NOW()
 	WHERE id=:id
 	RETURNING *
 	`
-	result := service.Tags{}
+	result := Tags{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -72,9 +87,9 @@ func UpdateTags(data service.Tags) (service.Tags, error) {
 	return result, err
 }
 
-func DeleteTags(id int) (service.Tags, error) {
+func DeleteTags(id int) (Tags, error) {
 	sql := `DELETE FROM "tags" WHERE id = $1 RETURNING *`
-	data := service.Tags{}
+	data := Tags{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

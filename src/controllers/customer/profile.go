@@ -58,7 +58,7 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	data := service.UserForm{}
+	data := models.UserForm{}
 	err := c.ShouldBind(&data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &service.ResponseOnly{

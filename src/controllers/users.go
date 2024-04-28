@@ -22,7 +22,7 @@ func ListAllUsers(c *gin.Context) {
 	sortBy := c.DefaultQuery("sortBy", "id")
 	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "6"))
 	offset := (page - 1) * limit
 
 	result, err := models.FindAllUsers(searchKey, sortBy, order, limit, offset)
@@ -98,7 +98,7 @@ func DetailUser(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-	data := service.UserForm{}
+	data := models.UserForm{}
 	errBind := c.ShouldBind(&data)
 
 	if errBind != nil {
@@ -153,7 +153,7 @@ func CreateUser(c *gin.Context) {
 
 func UpdateUser(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := service.UserForm{}
+	data := models.UserForm{}
 
 	err := c.ShouldBind(&data)
 	if err != nil {
@@ -228,12 +228,6 @@ func DeleteUser(c *gin.Context) {
 	}
 
 	user, err := models.DeleteUser(id)
-	if user.Picture != "" {
-		err := os.Remove("./" + user.Picture)
-		if err != nil {
-			fmt.Println("Error deleting file:", err)
-		}
-	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &service.ResponseOnly{
 			Success: false,

@@ -1,8 +1,36 @@
 package models
 
-import "github.com/rayfarandi/fwg17-go-backend/src/service"
+import (
+	"database/sql"
+	"time"
+)
 
-func FindAllProductRatings(sortBy string, order string, limit int, offset int) (service.InfoPR, error) {
+type ProductRatings struct {
+	Id            int            `db:"id" json:"id"`
+	ProductId     int            `db:"productId" json:"productId"`
+	Rate          int            `db:"rate" json:"rate"`
+	ReviewMessage sql.NullString `db:"reviewMessage" json:"reviewMessage"`
+	UserId        int            `db:"userId" json:"userId"`
+	CreatedAt     time.Time      `db:"createdAt" json:"createdAt"`
+	UpdatedAt     sql.NullTime   `db:"updatedAt" json:"updatedAt"`
+}
+
+type PRForm struct {
+	Id            int          `db:"id" json:"id"`
+	ProductId     *int         `db:"productId" json:"productId" form:"productId" binding:"required,numeric"`
+	Rate          *int         `db:"rate" json:"rate" form:"rate" binding:"required,eq=5|eq=4|eq=3|eq=2|eq=1"`
+	ReviewMessage *string      `db:"reviewMessage" json:"reviewMessage" form:"reviewMessage"`
+	UserId        *int         `db:"userId" json:"userId" form:"userId" binding:"required,numeric"`
+	CreatedAt     time.Time    `db:"createdAt" json:"createdAt"`
+	UpdatedAt     sql.NullTime `db:"updatedAt" json:"updatedAt"`
+}
+
+type InfoPR struct {
+	Data  []ProductRatings
+	Count int
+}
+
+func FindAllProductRatings(sortBy string, order string, limit int, offset int) (InfoPR, error) {
 	sql := `
 	SELECT * FROM "productRatings" 
 	ORDER BY "` + sortBy + `" ` + order + `
@@ -12,10 +40,10 @@ func FindAllProductRatings(sortBy string, order string, limit int, offset int) (
 	SELECT COUNT(*) FROM "productRatings"
 	`
 
-	result := service.InfoPR{}
-	data := []service.ProductRatings{}
+	result := InfoPR{}
+	data := []ProductRatings{}
 	err := db.Select(&data, sql, limit, offset)
-	if err != nil {
+	if err != nil{
 		return result, err
 	}
 	result.Data = data
@@ -26,20 +54,20 @@ func FindAllProductRatings(sortBy string, order string, limit int, offset int) (
 	return result, err
 }
 
-func FindOneProductRatings(id int) (service.ProductRatings, error) {
+func FindOneProductRatings(id int) (ProductRatings, error) {
 	sql := `SELECT * FROM "productRatings" WHERE id = $1`
-	data := service.ProductRatings{}
+	data := ProductRatings{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }
 
-func CreateProductRatings(data service.PRForm) (service.PRForm, error) {
+func CreateProductRatings(data PRForm) (PRForm, error) {
 	sql := `INSERT INTO "productRatings" ("productId", "rate", "reviewMessage", "userId") 
 	VALUES
 	(:productId, :rate, :reviewMessage, :userId)
 	RETURNING *
 	`
-	result := service.PRForm{}
+	result := PRForm{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -52,7 +80,7 @@ func CreateProductRatings(data service.PRForm) (service.PRForm, error) {
 	return result, err
 }
 
-func UpdateProductRatings(data service.PRForm) (service.PRForm, error) {
+func UpdateProductRatings(data PRForm) (PRForm, error) {
 	sql := `UPDATE "productRatings" SET
 	"productId"=COALESCE(NULLIF(:productId, 0),"productId"),
 	"rate"=COALESCE(NULLIF(:rate, 0),"rate"),
@@ -62,7 +90,7 @@ func UpdateProductRatings(data service.PRForm) (service.PRForm, error) {
 	WHERE id=:id
 	RETURNING *
 	`
-	result := service.PRForm{}
+	result := PRForm{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -75,9 +103,9 @@ func UpdateProductRatings(data service.PRForm) (service.PRForm, error) {
 	return result, err
 }
 
-func DeleteProductRatings(id int) (service.PRForm, error) {
+func DeleteProductRatings(id int) (PRForm, error) {
 	sql := `DELETE FROM "productRatings" WHERE id = $1 RETURNING *`
-	data := service.PRForm{}
+	data := PRForm{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

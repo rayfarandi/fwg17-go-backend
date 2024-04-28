@@ -18,6 +18,6 @@ func CombineCustomer(r *gin.RouterGroup) {
 	HistoryOrderRouter(r.Group("/history-order"))
 	r.GET("/order-products", controllers_customer.ListOrderProducts)
 	r.POST("/checkout", controllers_customer.Checkout)
-	r.GET("/data-size", controllers_customer.GetSizePr)
-	r.GET("/data-variant", controllers_customer.GetVariantPr)
+	r.GET("/data-size", controllers_customer.GetPriceSize)
+	r.GET("/data-variant", controllers_customer.GetPriceVariant)
 }

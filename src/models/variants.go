@@ -1,8 +1,24 @@
 package models
 
-import "github.com/rayfarandi/fwg17-go-backend/src/service"
+import (
+	"database/sql"
+	"time"
+)
 
-func FindAllVariants(searchKey string, sortBy string, order string, limit int, offset int) (service.InfoV, error) {
+type Variants struct {
+	Id              int          `db:"id" json:"id"`
+	Name            string       `db:"name" json:"name" form:"name" binding:"required,min=3"`
+	AdditionalPrice int          `db:"additionalPrice" json:"additionalPrice" form:"additionalPrice" binding:"required,numeric"`
+	CreatedAt       time.Time    `db:"createdAt" json:"createdAt"`
+	UpdatedAt       sql.NullTime `db:"updatedAt" json:"updatedAt"`
+}
+
+type InfoV struct {
+	Data  []Variants
+	Count int
+}
+
+func FindAllVariants(searchKey string, sortBy string, order string, limit int, offset int) (InfoV, error) {
 	sql := `
 	SELECT * FROM "variant" 
 	WHERE "name" ILIKE $1
@@ -14,10 +30,10 @@ func FindAllVariants(searchKey string, sortBy string, order string, limit int, o
 	WHERE "name" ILIKE $1
 	`
 
-	result := service.InfoV{}
-	data := []service.Variants{}
+	result := InfoV{}
+	data := []Variants{}
 	err := db.Select(&data, sql, "%"+searchKey+"%", limit, offset)
-	if err != nil {
+	if err != nil{
 		return result, err
 	}
 	result.Data = data
@@ -28,16 +44,16 @@ func FindAllVariants(searchKey string, sortBy string, order string, limit int, o
 	return result, err
 }
 
-func FindOneVariants(id int) (service.Variants, error) {
+func FindOneVariants(id int) (Variants, error) {
 	sql := `SELECT * FROM "variant" WHERE id = $1`
-	data := service.Variants{}
+	data := Variants{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }
 
-func CreateVariants(data service.Variants) (service.Variants, error) {
+func CreateVariants(data Variants) (Variants, error) {
 	sql := `INSERT INTO "variant" ("name", "additionalPrice") VALUES (:name, :additionalPrice) RETURNING *`
-	result := service.Variants{}
+	result := Variants{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -50,7 +66,7 @@ func CreateVariants(data service.Variants) (service.Variants, error) {
 	return result, err
 }
 
-func UpdateVariants(data service.Variants) (service.Variants, error) {
+func UpdateVariants(data Variants) (Variants, error) {
 	sql := `UPDATE "variant" SET
 	"name"=COALESCE(NULLIF(:name, ''),"name"),
 	"additionalPrice"=COALESCE(NULLIF(:additionalPrice, 0),"additionalPrice"),
@@ -58,7 +74,7 @@ func UpdateVariants(data service.Variants) (service.Variants, error) {
 	WHERE id=:id
 	RETURNING *
 	`
-	result := service.Variants{}
+	result := Variants{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -71,9 +87,9 @@ func UpdateVariants(data service.Variants) (service.Variants, error) {
 	return result, err
 }
 
-func DeleteVariants(id int) (service.Variants, error) {
+func DeleteVariants(id int) (Variants, error) {
 	sql := `DELETE FROM "variant" WHERE id = $1 RETURNING *`
-	data := service.Variants{}
+	data := Variants{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

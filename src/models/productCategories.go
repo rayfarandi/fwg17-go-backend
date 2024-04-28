@@ -1,8 +1,24 @@
 package models
 
-import "github.com/rayfarandi/fwg17-go-backend/src/service"
+import (
+	"database/sql"
+	"time"
+)
 
-func FindAllProductCategories(sortBy string, order string, limit int, offset int) (service.InfoPC, error) {
+type ProductCategories struct {
+	Id         int          `db:"id" json:"id"`
+	ProductId  int          `db:"productId" json:"productId" form:"productId" binding:"required,numeric"`
+	CategoryId int          `db:"categoryId" json:"categoryId" form:"categoryId" binding:"required,numeric"`
+	CreatedAt  time.Time    `db:"createdAt" json:"createdAt"`
+	UpdatedAt  sql.NullTime `db:"updatedAt" json:"updatedAt"`
+}
+
+type InfoPC struct {
+	Data  []ProductCategories
+	Count int
+}
+
+func FindAllProductCategories(sortBy string, order string, limit int, offset int) (InfoPC, error) {
 	sql := `
 	SELECT * FROM "productCategories" 
 	ORDER BY "` + sortBy + `" ` + order + `
@@ -12,10 +28,10 @@ func FindAllProductCategories(sortBy string, order string, limit int, offset int
 	SELECT COUNT(*) FROM "productCategories"
 	`
 
-	result := service.InfoPC{}
-	data := []service.ProductCategories{}
+	result := InfoPC{}
+	data := []ProductCategories{}
 	err := db.Select(&data, sql, limit, offset)
-	if err != nil {
+	if err != nil{
 		return result, err
 	}
 	result.Data = data
@@ -26,20 +42,20 @@ func FindAllProductCategories(sortBy string, order string, limit int, offset int
 	return result, err
 }
 
-func FindOneProductCategories(id int) (service.ProductCategories, error) {
+func FindOneProductCategories(id int) (ProductCategories, error) {
 	sql := `SELECT * FROM "productCategories" WHERE id = $1`
-	data := service.ProductCategories{}
+	data := ProductCategories{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }
 
-func CreateProductCategories(data service.ProductCategories) (service.ProductCategories, error) {
+func CreateProductCategories(data ProductCategories) (ProductCategories, error) {
 	sql := `INSERT INTO "productCategories" ("productId", "categoryId") 
 	VALUES
 	(:productId, :categoryId)
 	RETURNING *
 	`
-	result := service.ProductCategories{}
+	result := ProductCategories{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -52,7 +68,7 @@ func CreateProductCategories(data service.ProductCategories) (service.ProductCat
 	return result, err
 }
 
-func UpdateProductCategories(data service.ProductCategories) (service.ProductCategories, error) {
+func UpdateProductCategories(data ProductCategories) (ProductCategories, error) {
 	sql := `UPDATE "productCategories" SET
 	"productId"=COALESCE(NULLIF(:productId, 0),"productId"),
 	"categoryId"=COALESCE(NULLIF(:categoryId, 0),"categoryId"),
@@ -60,7 +76,7 @@ func UpdateProductCategories(data service.ProductCategories) (service.ProductCat
 	WHERE id=:id
 	RETURNING *
 	`
-	result := service.ProductCategories{}
+	result := ProductCategories{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -73,9 +89,9 @@ func UpdateProductCategories(data service.ProductCategories) (service.ProductCat
 	return result, err
 }
 
-func DeleteProductCategories(id int) (service.ProductCategories, error) {
+func DeleteProductCategories(id int) (ProductCategories, error) {
 	sql := `DELETE FROM "productCategories" WHERE id = $1 RETURNING *`
-	data := service.ProductCategories{}
+	data := ProductCategories{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

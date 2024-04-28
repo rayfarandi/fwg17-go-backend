@@ -1,8 +1,42 @@
 package models
 
-import "github.com/rayfarandi/fwg17-go-backend/src/service"
+import (
+	"database/sql"
+	"time"
+)
 
-func FindAllPromo(searchKey string, sortBy string, order string, limit int, offset int) (service.InfoPo, error) {
+type Promo struct {
+	Id            int            `db:"id" json:"id"`
+	Name          string         `db:"name" json:"name" form:"name"`
+	Code          string         `db:"code" json:"code" form:"code"`
+	Description   sql.NullString `db:"description" json:"description" form:"description"`
+	Percentage    float64        `db:"percentage" json:"percentage" form:"percentage"`
+	IsExpired     sql.NullBool   `db:"isExpired" json:"isExpired" form:"isExpired"`
+	MaximumPromo  int            `db:"maximumPromo" json:"maximumPromo" form:"maximumPromo"`
+	MinimumAmount int            `db:"minimumAmount" json:"minimumAmount" form:"minimumAmount"`
+	CreatedAt     time.Time      `db:"createdAt" json:"createdAt"`
+	UpdatedAt     sql.NullTime   `db:"updatedAt" json:"updatedAt"`
+}
+
+type PromoForm struct {
+	Id            int          `db:"id" json:"id"`
+	Name          *string      `db:"name" json:"name" form:"name" binding:"required,min=3"`
+	Code          *string      `db:"code" json:"code" form:"code" binding:"required,min=3"`
+	Description   *string      `db:"description" json:"description" form:"description"`
+	Percentage    *float64     `db:"percentage" json:"percentage" form:"percentage" binding:"required"`
+	IsExpired     *bool        `db:"isExpired" json:"isExpired" form:"isExpired"`
+	MaximumPromo  *int         `db:"maximumPromo" json:"maximumPromo" form:"maximumPromo" binding:"required"`
+	MinimumAmount *int         `db:"minimumAmount" json:"minimumAmount" form:"minimumAmount" binding:"required"`
+	CreatedAt     time.Time    `db:"createdAt" json:"createdAt"`
+	UpdatedAt     sql.NullTime `db:"updatedAt" json:"updatedAt"`
+}
+
+type InfoPo struct {
+	Data  []Promo
+	Count int
+}
+
+func FindAllPromo(searchKey string, sortBy string, order string, limit int, offset int) (InfoPo, error) {
 	sql := `
 	SELECT * FROM "promo" 
 	WHERE "name" ILIKE $1
@@ -14,8 +48,8 @@ func FindAllPromo(searchKey string, sortBy string, order string, limit int, offs
 	WHERE "name" ILIKE $1
 	`
 
-	result := service.InfoPo{}
-	data := []service.Promo{}
+	result := InfoPo{}
+	data := []Promo{}
 	err := db.Select(&data, sql, "%"+searchKey+"%", limit, offset)
 	if err != nil {
 		return result, err
@@ -28,20 +62,20 @@ func FindAllPromo(searchKey string, sortBy string, order string, limit int, offs
 	return result, err
 }
 
-func FindOnePromo(id int) (service.Promo, error) {
+func FindOnePromo(id int) (Promo, error) {
 	sql := `SELECT * FROM "promo" WHERE id = $1`
-	data := service.Promo{}
+	data := Promo{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }
 
-func CreatePromo(data service.PromoForm) (service.PromoForm, error) {
+func CreatePromo(data PromoForm) (PromoForm, error) {
 	sql := `INSERT INTO "promo" ("name","code", "description", "percentage", "isExpired", "maximumPromo", "minimumAmount") 
 	VALUES
 	(:name, :code, :description, :percentage, :isExpired, :maximumPromo, :minimumAmount)
 	RETURNING *
 	`
-	result := service.PromoForm{}
+	result := PromoForm{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -54,7 +88,7 @@ func CreatePromo(data service.PromoForm) (service.PromoForm, error) {
 	return result, err
 }
 
-func UpdatePromo(data service.PromoForm) (service.PromoForm, error) {
+func UpdatePromo(data PromoForm) (PromoForm, error) {
 	sql := `UPDATE "promo" SET
 	"name"=COALESCE(NULLIF(:name, ''),"name"),
 	"code"=COALESCE(NULLIF(:code, ''),"code"),
@@ -67,7 +101,7 @@ func UpdatePromo(data service.PromoForm) (service.PromoForm, error) {
 	WHERE id=:id
 	RETURNING *
 	`
-	result := service.PromoForm{}
+	result := PromoForm{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -80,9 +114,9 @@ func UpdatePromo(data service.PromoForm) (service.PromoForm, error) {
 	return result, err
 }
 
-func DeletePromo(id int) (service.PromoForm, error) {
+func DeletePromo(id int) (PromoForm, error) {
 	sql := `DELETE FROM "promo" WHERE id = $1 RETURNING *`
-	data := service.PromoForm{}
+	data := PromoForm{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

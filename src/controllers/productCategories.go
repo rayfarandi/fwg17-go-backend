@@ -18,7 +18,7 @@ func ListAllProductCategories(c *gin.Context) {
 	sortBy := c.DefaultQuery("sortBy", "id")
 	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "6"))
 	offset := (page - 1) * limit
 
 	result, err := models.FindAllProductCategories(sortBy, order, limit, offset)
@@ -93,7 +93,7 @@ func DetailProductCategories(c *gin.Context) {
 }
 
 func CreateProductCategories(c *gin.Context) {
-	data := service.ProductCategories{}
+	data := models.ProductCategories{}
 	c.ShouldBind(&data)
 
 	_, err := models.FindOneProducts(data.ProductId)
@@ -135,7 +135,7 @@ func CreateProductCategories(c *gin.Context) {
 
 func UpdateProductCategories(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := service.ProductCategories{}
+	data := models.ProductCategories{}
 
 	c.ShouldBind(&data)
 

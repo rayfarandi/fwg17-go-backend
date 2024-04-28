@@ -94,7 +94,7 @@ func DetailForgotPassword(c *gin.Context) {
 }
 
 func CreateForgotPassword(c *gin.Context) {
-	data := service.ForgotPassword{}
+	data := models.ForgotPassword{}
 	err := c.ShouldBind(&data)
 
 	fp, err := models.CreateForgotPassword(data)
@@ -117,7 +117,7 @@ func CreateForgotPassword(c *gin.Context) {
 
 func UpdateForgotPassword(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := service.FPForm{}
+	data := models.FPForm{}
 
 	c.ShouldBind(&data)
 	data.Id = id

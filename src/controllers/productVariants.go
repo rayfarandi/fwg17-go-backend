@@ -18,7 +18,7 @@ func ListAllProductVariants(c *gin.Context) {
 	sortBy := c.DefaultQuery("sortBy", "id")
 	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "6"))
 	offset := (page - 1) * limit
 
 	result, err := models.FindAllProductVariants(sortBy, order, limit, offset)
@@ -93,7 +93,7 @@ func DetailProductVariant(c *gin.Context) {
 }
 
 func CreateProductVariants(c *gin.Context) {
-	data := service.ProductVariants{}
+	data := models.ProductVariants{}
 	c.ShouldBind(&data)
 
 	_, err := models.FindOneProducts(data.ProductId)
@@ -135,7 +135,7 @@ func CreateProductVariants(c *gin.Context) {
 
 func UpdateProductVariants(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := service.ProductVariants{}
+	data := models.ProductVariants{}
 
 	c.ShouldBind(&data)
 

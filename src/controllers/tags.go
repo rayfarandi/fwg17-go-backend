@@ -19,7 +19,7 @@ func ListAllTags(c *gin.Context) {
 	sortBy := c.DefaultQuery("sortBy", "id")
 	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "6"))
 	offset := (page - 1) * limit
 
 	result, err := models.FindAllTags(searchKey, sortBy, order, limit, offset)
@@ -94,7 +94,7 @@ func DetailTags(c *gin.Context) {
 }
 
 func CreateTags(c *gin.Context) {
-	data := service.Tags{}
+	data := models.Tags{}
 	c.ShouldBind(&data)
 
 	tags, err := models.CreateTags(data)
@@ -116,7 +116,7 @@ func CreateTags(c *gin.Context) {
 
 func UpdateTags(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := service.Tags{}
+	data := models.Tags{}
 
 	c.ShouldBind(&data)
 	data.Id = id

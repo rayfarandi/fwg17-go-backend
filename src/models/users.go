@@ -2,16 +2,48 @@ package models
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/LukaGiorgadze/gonull"
 	"github.com/rayfarandi/fwg17-go-backend/src/lib"
-	"github.com/rayfarandi/fwg17-go-backend/src/service"
 
 	"github.com/jmoiron/sqlx"
 )
 
 var db *sqlx.DB = lib.DB
 
-func FindAllUsers(searchKey string, sortBy string, order string, limit int, offset int) (service.Info, error) {
+type User struct {
+	Id          int                     `db:"id" json:"id"`
+	FullName    string                  `db:"fullName" json:"fullName" form:"fullName"`
+	Email       string                  `db:"email" json:"email" form:"email"`
+	Password    string                  `db:"password" json:"-" form:"password"`
+	Address     gonull.Nullable[string] `db:"address" json:"address" form:"address"`
+	Picture     string                  `db:"picture" json:"picture"`
+	PhoneNumber gonull.Nullable[string] `db:"phoneNumber" json:"phoneNumber" form:"phoneNumber"`
+	Role        string                  `db:"role" json:"role" form:"role"`
+	CreatedAt   time.Time               `db:"createdAt" json:"createdAt"`
+	UpdatedAt   gonull.Nullable[string] `db:"updatedAt" json:"updatedAt"`
+}
+
+type UserForm struct {
+	Id          int                     `db:"id" json:"id"`
+	FullName    *string                 `db:"fullName" json:"fullName" form:"fullName"`
+	Email       *string                 `db:"email" json:"email" form:"email"`
+	Password    string                  `db:"password" json:"-" form:"password"`
+	Address     *string                 `db:"address" json:"address" form:"address"`
+	Picture     string                  `db:"picture" json:"picture"`
+	PhoneNumber *string                 `db:"phoneNumber" json:"phoneNumber" form:"phoneNumber"`
+	Role        *string                 `db:"role" json:"role" form:"role"`
+	CreatedAt   time.Time               `db:"createdAt" json:"createdAt"`
+	UpdatedAt   gonull.Nullable[string] `db:"updatedAt" json:"updatedAt"`
+}
+
+type Info struct {
+	Data  []User
+	Count int
+}
+
+func FindAllUsers(searchKey string, sortBy string, order string, limit int, offset int) (Info, error) {
 	sql := `
 	SELECT * FROM "users" 
 	WHERE "fullName" ILIKE $1
@@ -23,8 +55,8 @@ func FindAllUsers(searchKey string, sortBy string, order string, limit int, offs
 	WHERE "fullName" ILIKE $1
 	`
 
-	result := service.Info{}
-	data := []service.User{}
+	result := Info{}
+	data := []User{}
 	err := db.Select(&data, sql, "%"+searchKey+"%", limit, offset)
 	if err != nil {
 		return result, err
@@ -37,21 +69,21 @@ func FindAllUsers(searchKey string, sortBy string, order string, limit int, offs
 	return result, err
 }
 
-func FindOneUsers(id int) (service.User, error) {
+func FindOneUsers(id int) (User, error) {
 	sql := `SELECT * FROM "users" WHERE id = $1`
-	data := service.User{}
+	data := User{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }
 
-func FindOneUsersByEmail(email string) (service.User, error) {
+func FindOneUsersByEmail(email string) (User, error) {
 	sql := `SELECT * FROM "users" WHERE email = $1`
-	data := service.User{}
+	data := User{}
 	err := db.Get(&data, sql, email)
 	return data, err
 }
 
-func CreateUser(data service.UserForm) (service.UserForm, error) {
+func CreateUser(data UserForm) (UserForm, error) {
 	fmt.Println(data.PhoneNumber)
 	fmt.Println(data.Picture)
 
@@ -60,7 +92,7 @@ func CreateUser(data service.UserForm) (service.UserForm, error) {
 	(:fullName, :email, :password, :address, :phoneNumber, :role, :picture)
 	RETURNING *
 	`
-	result := service.UserForm{}
+	result := UserForm{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -73,7 +105,7 @@ func CreateUser(data service.UserForm) (service.UserForm, error) {
 	return result, err
 }
 
-func UpdateUser(data service.UserForm) (service.UserForm, error) {
+func UpdateUser(data UserForm) (UserForm, error) {
 	sql := `UPDATE "users" SET
 	"fullName"=COALESCE(NULLIF(:fullName, ''),"fullName"),
 	"email"=COALESCE(NULLIF(:email, ''),"email"),
@@ -85,7 +117,7 @@ func UpdateUser(data service.UserForm) (service.UserForm, error) {
 	WHERE id=:id
 	RETURNING *
 	`
-	result := service.UserForm{}
+	result := UserForm{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -98,9 +130,9 @@ func UpdateUser(data service.UserForm) (service.UserForm, error) {
 	return result, err
 }
 
-func DeleteUser(id int) (service.UserForm, error) {
+func DeleteUser(id int) (UserForm, error) {
 	sql := `DELETE FROM "users" WHERE id = $1 RETURNING *`
-	data := service.UserForm{}
+	data := UserForm{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

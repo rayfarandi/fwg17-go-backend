@@ -19,7 +19,7 @@ func ListAllPromo(c *gin.Context) {
 	sortBy := c.DefaultQuery("sortBy", "id")
 	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "6"))
 	offset := (page - 1) * limit
 
 	result, err := models.FindAllPromo(searchKey, sortBy, order, limit, offset)
@@ -94,7 +94,7 @@ func DetailPromo(c *gin.Context) {
 }
 
 func CreatePromo(c *gin.Context) {
-	data := service.PromoForm{}
+	data := models.PromoForm{}
 	c.ShouldBind(&data)
 
 	promo, err := models.CreatePromo(data)
@@ -116,7 +116,7 @@ func CreatePromo(c *gin.Context) {
 
 func UpdatePromo(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := service.PromoForm{}
+	data := models.PromoForm{}
 
 	err := c.ShouldBind(&data)
 	if err != nil {

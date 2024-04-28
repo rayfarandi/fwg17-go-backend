@@ -21,21 +21,21 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 		Key:         []byte(os.Getenv("APP_SECRET")),
 		IdentityKey: "id",
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			user := data.(*service.User) //user di dapat dari authenticator-login
-			return jwt.MapClaims{        //memasukan payload ke jwt
+			user := data.(*models.User) //user di dapat dari authenticator-login
+			return jwt.MapClaims{       //memasukan payload ke jwt
 				"id":   user.Id,
 				"role": user.Role,
 			}
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c) // membaca payload
-			return &service.User{
+			return &models.User{
 				Id:   int(claims["id"].(float64)),
 				Role: claims["role"].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			form := service.User{}
+			form := models.User{}
 			err := c.ShouldBind(&form)
 			if err != nil {
 				return nil, err
@@ -55,7 +55,7 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 
 			plain := []byte(form.Password)
 			if decode.IsValidPassword(plain) {
-				return &service.User{
+				return &models.User{
 					Id:   found.Id,
 					Role: found.Role,
 				}, nil
@@ -64,7 +64,7 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 			}
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			user := data.(*service.User)
+			user := data.(*models.User)
 			if strings.HasPrefix(c.Request.URL.Path, "/admin") {
 				if user.Role != "admin" {
 					return false
@@ -79,7 +79,6 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 
 			return true
 		},
-
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			if strings.HasPrefix(c.Request.URL.Path, "/login") {
 				c.JSON(http.StatusUnauthorized, &service.ResponseOnly{
@@ -102,7 +101,6 @@ func Auth() (*jwt.GinJWTMiddleware, error) {
 				Message: "Unauthorized",
 			})
 		},
-
 		LoginResponse: func(c *gin.Context, code int, token string, time time.Time) {
 			c.JSON(http.StatusOK, &service.Response{
 				Success: true,

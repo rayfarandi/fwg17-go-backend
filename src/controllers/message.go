@@ -18,7 +18,7 @@ func ListAllMessage(c *gin.Context) {
 	sortBy := c.DefaultQuery("sortBy", "id")
 	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "6"))
 	offset := (page - 1) * limit
 
 	result, err := models.FindAllMessage(sortBy, order, limit, offset)
@@ -93,7 +93,7 @@ func DetailMessage(c *gin.Context) {
 }
 
 func CreateMessage(c *gin.Context) {
-	data := service.Message{}
+	data := models.Message{}
 	c.ShouldBind(&data)
 
 	message, err := models.CreateMessage(data)
@@ -115,7 +115,7 @@ func CreateMessage(c *gin.Context) {
 
 func UpdateMessage(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := service.Message{}
+	data := models.Message{}
 
 	c.ShouldBind(&data)
 	data.Id = id

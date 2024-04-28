@@ -5,16 +5,23 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/KEINOS/go-argonize"
+	"github.com/gin-gonic/gin"
+
 	"github.com/rayfarandi/fwg17-go-backend/src/lib"
 	"github.com/rayfarandi/fwg17-go-backend/src/models"
 	"github.com/rayfarandi/fwg17-go-backend/src/service"
-
-	"github.com/KEINOS/go-argonize"
-	"github.com/gin-gonic/gin"
 )
 
+type FormReset struct {
+	Email           string `form:"email"`
+	Otp             string `form:"otp"`
+	Password        string `form:"password"`
+	ConfirmPassword string `form:"confirmPassword" binding:"eqfield=Password"`
+}
+
 func Register(c *gin.Context) {
-	form := service.UserForm{}
+	form := models.UserForm{}
 	err := c.ShouldBind(&form)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &service.ResponseOnly{
@@ -51,13 +58,13 @@ func Register(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &service.Response{
 		Success: true,
-		Message: "register success. welcome Home",
+		Message: "register success. . . welcome aboard!",
 		Results: result,
 	})
 }
 
 func ForgotPassword(c *gin.Context) {
-	form := service.FormReset{}
+	form := FormReset{}
 	c.ShouldBind(&form)
 
 	if form.Email != "" {
@@ -66,22 +73,22 @@ func ForgotPassword(c *gin.Context) {
 		if found.Id == 0 {
 			c.JSON(http.StatusBadRequest, &service.ResponseOnly{
 				Success: false,
-				Message: "email not registered. use other email",
+				Message: "email not registered. . . . please use another email",
 			})
 			return
 		}
 
-		FormReset := service.ForgotPassword{
+		FormReset := models.ForgotPassword{
 			Otp:   lib.RandomNumberStr(6),
 			Email: form.Email,
 		}
 		models.CreateForgotPassword(FormReset)
-		// start send email
+		// START SEND EMAIL
 		fmt.Println(FormReset.Otp)
-		// end send email
+		// END SEND EMAIL
 		c.JSON(http.StatusOK, &service.ResponseOnly{
 			Success: true,
-			Message: "OTP has sent to your email",
+			Message: "OTP has been sent to your email",
 		})
 		return
 	}
@@ -91,13 +98,21 @@ func ForgotPassword(c *gin.Context) {
 		if found.Id == 0 {
 			c.JSON(http.StatusBadRequest, &service.ResponseOnly{
 				Success: false,
-				Message: "invalid OTP code. please enter correct code",
+				Message: "invalid OTP code. . . please enter the correct code",
 			})
 			return
 		}
 
+		// if form.Password != form.ConfirmPassword{
+		// 	c.JSON(http.StatusBadRequest, &service.ResponseOnly{
+		// 		Success: false,
+		// 		Message: "Confirm password does not match",
+		// 	})
+		// 	return
+		// }
+
 		foundUser, _ := models.FindOneUsersByEmail(found.Email)
-		data := service.UserForm{
+		data := models.UserForm{
 			Id: foundUser.Id,
 		}
 

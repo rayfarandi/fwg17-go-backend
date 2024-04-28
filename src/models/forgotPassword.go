@@ -1,8 +1,33 @@
 package models
 
-import "github.com/rayfarandi/fwg17-go-backend/src/service"
+import (
+	"database/sql"
+	"time"
+)
 
-func FindAllForgotPassword(searchKey string, sortBy string, order string, limit int, offset int) (service.InfoFP, error) {
+type ForgotPassword struct {
+	Id        int           `db:"id" json:"id"`
+	Otp       string        `db:"otp" json:"otp"`
+	UserId    sql.NullInt64 `db:"userId" json:"userId"`
+	Email     string        `db:"email" json:"email"`
+	CreatedAt time.Time     `db:"createdAt" json:"createdAt"`
+	UpdatedAt sql.NullTime  `db:"updatedAt" json:"updatedAt"`
+}
+type FPForm struct {
+	Id        int          `db:"id" json:"id"`
+	Otp       *string      `db:"otp" json:"otp" form:"otp" binding:"required"`
+	UserId    *int         `db:"userId" json:"userId" form:"userId" binding:"required"`
+	Email     *string      `db:"email" json:"email" form:"email" binding:"required"`
+	CreatedAt time.Time    `db:"createdAt" json:"createdAt"`
+	UpdatedAt sql.NullTime `db:"updatedAt" json:"updatedAt"`
+}
+
+type InfoFP struct {
+	Data  []ForgotPassword
+	Count int
+}
+
+func FindAllForgotPassword(searchKey string, sortBy string, order string, limit int, offset int) (InfoFP, error) {
 	sql := `
 	SELECT * FROM "forgotPassword" 
 	WHERE "email" ILIKE $1
@@ -14,10 +39,10 @@ func FindAllForgotPassword(searchKey string, sortBy string, order string, limit 
 	WHERE "email" ILIKE $1
 	`
 
-	result := service.InfoFP{}
-	data := []service.ForgotPassword{}
+	result := InfoFP{}
+	data := []ForgotPassword{}
 	err := db.Select(&data, sql, "%"+searchKey+"%", limit, offset)
-	if err != nil {
+	if err != nil{
 		return result, err
 	}
 	result.Data = data
@@ -28,26 +53,26 @@ func FindAllForgotPassword(searchKey string, sortBy string, order string, limit 
 	return result, err
 }
 
-func FindOneForgotPassword(id int) (service.ForgotPassword, error) {
+func FindOneForgotPassword(id int) (ForgotPassword, error) {
 	sql := `SELECT * FROM "forgotPassword" WHERE id = $1`
-	data := service.ForgotPassword{}
+	data := ForgotPassword{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }
 
-func FindOneByOtp(otp string) (service.ForgotPassword, error) {
+func FindOneByOtp(otp string) (ForgotPassword, error) {
 	sql := `SELECT * FROM "forgotPassword" WHERE otp = $1`
-	data := service.ForgotPassword{}
+	data := ForgotPassword{}
 	err := db.Get(&data, sql, otp)
 	return data, err
 }
 
-func CreateForgotPassword(data service.ForgotPassword) (service.ForgotPassword, error) {
+func CreateForgotPassword(data ForgotPassword) (ForgotPassword, error) {
 	sql := `INSERT INTO "forgotPassword" ("otp", "email", "userId") 
 	VALUES (:otp, :email, :userId) 
 	RETURNING *
 	`
-	result := service.ForgotPassword{}
+	result := ForgotPassword{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -60,7 +85,7 @@ func CreateForgotPassword(data service.ForgotPassword) (service.ForgotPassword, 
 	return result, err
 }
 
-func UpdateForgotPassword(data service.FPForm) (service.FPForm, error) {
+func UpdateForgotPassword(data FPForm) (FPForm, error) {
 	sql := `UPDATE "forgotPassword" SET
 	"otp"=COALESCE(NULLIF(:otp, 0),"otp"),
 	"email"=COALESCE(NULLIF(:email, ''),"email"),
@@ -68,7 +93,7 @@ func UpdateForgotPassword(data service.FPForm) (service.FPForm, error) {
 	WHERE id=:id
 	RETURNING *
 	`
-	result := service.FPForm{}
+	result := FPForm{}
 	rows, err := db.NamedQuery(sql, data)
 	if err != nil {
 		return result, err
@@ -81,9 +106,9 @@ func UpdateForgotPassword(data service.FPForm) (service.FPForm, error) {
 	return result, err
 }
 
-func DeleteForgotPassword(id int) (service.FPForm, error) {
+func DeleteForgotPassword(id int) (FPForm, error) {
 	sql := `DELETE FROM "forgotPassword" WHERE id = $1 RETURNING *`
-	data := service.FPForm{}
+	data := FPForm{}
 	err := db.Get(&data, sql, id)
 	return data, err
 }

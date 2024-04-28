@@ -18,7 +18,7 @@ func ListAllProductRatings(c *gin.Context) {
 	sortBy := c.DefaultQuery("sortBy", "id")
 	order := c.DefaultQuery("order", "ASC")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "6"))
 	offset := (page - 1) * limit
 
 	result, err := models.FindAllProductRatings(sortBy, order, limit, offset)
@@ -93,7 +93,7 @@ func DetailProductRatings(c *gin.Context) {
 }
 
 func CreateProductRatings(c *gin.Context) {
-	data := service.ProductRatings{}
+	data := models.ProductRatings{}
 	c.ShouldBind(&data)
 
 	_, err := models.FindOneProducts(data.ProductId)
@@ -116,7 +116,7 @@ func CreateProductRatings(c *gin.Context) {
 		return
 	}
 
-	dataForm := service.PRForm{}
+	dataForm := models.PRForm{}
 	c.ShouldBind(&dataForm)
 	fmt.Println(dataForm)
 
@@ -139,7 +139,7 @@ func CreateProductRatings(c *gin.Context) {
 
 func UpdatePrductRatings(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	data := service.ProductRatings{}
+	data := models.ProductRatings{}
 
 	c.ShouldBind(&data)
 
@@ -163,7 +163,7 @@ func UpdatePrductRatings(c *gin.Context) {
 		return
 	}
 
-	dataForm := service.PRForm{}
+	dataForm := models.PRForm{}
 	c.ShouldBind(&dataForm)
 	dataForm.Id = id
 	fmt.Println(dataForm)
